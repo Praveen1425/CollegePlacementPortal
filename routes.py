@@ -18,6 +18,13 @@ from chatbot import get_chatbot_response
 from datetime import datetime
 import logging
 
+# Template context processor for utility functions
+@app.context_processor
+def utility_processor():
+    def now():
+        return datetime.utcnow()
+    return dict(now=now)
+
 # Home route
 @app.route('/')
 def index():

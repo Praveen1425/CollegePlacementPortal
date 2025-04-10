@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Provide Mock Interview Feedback - College Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('cdc_schedule_mock') }}">Mock Interviews</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Provide Feedback</li>
+                </ol>
+            </nav>
+            <h2 class="mb-3"><i class="fas fa-comment-dots me-2"></i>Provide Mock Interview Feedback</h2>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Feedback Form</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('cdc_provide_mock_feedback', mock_id=mock.id) }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.feedback.id }}" class="form-label">Feedback</label>
+                            {{ form.feedback(class="form-control", rows=10, placeholder="Provide detailed feedback about the student's performance in this mock interview...") }}
+                            <div class="form-text">
+                                Include strengths, areas for improvement, and specific recommendations for the student.
+                            </div>
+                            {% for error in form.feedback.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-graduate me-2"></i>Student Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <i class="fas fa-user-circle fa-5x text-primary"></i>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <strong>Name:</strong> {{ student.full_name }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Roll Number:</strong> {{ student.roll_number }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Branch:</strong> {{ student.branch }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>CGPA:</strong> {{ student.cgpa }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Mock Interview Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <strong>Topic:</strong> {{ mock.topic }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Scheduled Date:</strong> {{ mock.scheduled_date.strftime('%d %b %Y, %H:%M') }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Interviewer:</strong> {{ mock.interviewer }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Status:</strong> 
+                        <span class="badge bg-warning">{{ mock.status|title }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Feedback Guidelines</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>What to Include:</h6>
+                            <ul>
+                                <li>Assessment of technical knowledge and problem-solving abilities</li>
+                                <li>Communication skills and clarity of expression</li>
+                                <li>Body language and confidence level</li>
+                                <li>Quality of answers and thought process</li>
+                                <li>Preparation level and domain knowledge</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Feedback Structure:</h6>
+                            <ol>
+                                <li>Start with positive observations</li>
+                                <li>Point out areas that need improvement</li>
+                                <li>Provide specific examples from the interview</li>
+                                <li>Give actionable recommendations</li>
+                                <li>End with encouragement and a summary</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

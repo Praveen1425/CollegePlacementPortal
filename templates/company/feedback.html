@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Provide Interview Feedback - College Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('company_students') }}">Registered Students</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Interview Feedback</li>
+                </ol>
+            </nav>
+            <h2 class="mb-3"><i class="fas fa-comment-dots me-2"></i>Provide Interview Feedback</h2>
+            <p class="text-muted">
+                Student: {{ student.full_name }} | Round: {{ round.round_name }}
+            </p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Feedback Form</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('company_provide_feedback', application_id=application.id, round_id=round.id) }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.feedback.id }}" class="form-label">Feedback</label>
+                            {{ form.feedback(class="form-control", rows=6, placeholder="Provide detailed feedback about the candidate's performance...") }}
+                            <div class="form-text">
+                                Include specific strengths, weaknesses, and areas for improvement.
+                            </div>
+                            {% for error in form.feedback.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.rating.id }}" class="form-label">Rating (1-10)</label>
+                            {{ form.rating(class="form-control", min=1, max=10, type="number") }}
+                            <div class="form-text">
+                                1 = Unsatisfactory, 5 = Average, 10 = Excellent
+                            </div>
+                            {% for error in form.rating.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.interviewer_name.id }}" class="form-label">Interviewer Name</label>
+                            {{ form.interviewer_name(class="form-control") }}
+                            {% for error in form.interviewer_name.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-graduate me-2"></i>Student Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <i class="fas fa-user-circle fa-5x text-primary"></i>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <strong>Name:</strong> {{ student.full_name }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Roll Number:</strong> {{ student.roll_number }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Branch:</strong> {{ student.branch }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>CGPA:</strong> {{ student.cgpa }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Interview Round Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <strong>Job Position:</strong> {{ application.job_posting.title }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Round Name:</strong> {{ round.round_name }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Round Number:</strong> {{ round.round_number }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Round Description:</strong>
+                        <p class="text-muted mt-1 mb-0">{{ round.round_description or 'No description provided' }}</p>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Scheduled Date:</strong>
+                        {% if round.round_date %}
+                            {{ round.round_date.strftime('%d %b %Y, %H:%M') }}
+                        {% else %}
+                            Not scheduled
+                        {% endif %}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Current Application Status:</strong>
+                        {% if application.status == 'applied' %}
+                            <span class="badge bg-primary">Applied</span>
+                        {% elif application.status == 'shortlisted' %}
+                            <span class="badge bg-info">Shortlisted</span>
+                        {% elif application.status == 'interview_scheduled' %}
+                            <span class="badge bg-warning">Interview Scheduled</span>
+                        {% elif application.status == 'selected' %}
+                            <span class="badge bg-success">Selected</span>
+                        {% elif application.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ application.status }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Feedback Guidelines</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Technical Assessment Areas</h6>
+                            <ul>
+                                <li>Problem-solving approach and capability</li>
+                                <li>Technical knowledge and concepts</li>
+                                <li>Coding/implementation skills (if applicable)</li>
+                                <li>Understanding of the job requirements</li>
+                                <li>Ability to learn and adapt</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Soft Skills Assessment</h6>
+                            <ul>
+                                <li>Communication clarity and effectiveness</li>
+                                <li>Teamwork and collaboration potential</li>
+                                <li>Leadership qualities (if required for role)</li>
+                                <li>Time management and organization</li>
+                                <li>Cultural fit with the organization</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3 mb-0">
+                        <i class="fas fa-lightbulb me-2"></i><strong>Tip:</strong>
+                        Balanced feedback that highlights both strengths and areas for improvement is most helpful for candidates.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

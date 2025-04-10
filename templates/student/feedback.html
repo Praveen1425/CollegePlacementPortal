@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}My Feedback - College Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">My Feedback</li>
+                </ol>
+            </nav>
+            <h2 class="mb-3"><i class="fas fa-comments me-2"></i>Interview Feedback</h2>
+        </div>
+    </div>
+    
+    <!-- Mock Interview Feedback -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-comment-dots me-2"></i>Mock Interview Feedback</h5>
+                </div>
+                
+                {% if mock_interviews %}
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Topic</th>
+                                        <th>Date</th>
+                                        <th>Interviewer</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mock in mock_interviews %}
+                                        <tr>
+                                            <td>{{ mock.topic }}</td>
+                                            <td>{{ mock.scheduled_date.strftime('%d %b %Y, %H:%M') }}</td>
+                                            <td>{{ mock.interviewer }}</td>
+                                            <td>
+                                                {% if mock.status == 'scheduled' %}
+                                                    <span class="badge bg-warning">Scheduled</span>
+                                                {% elif mock.status == 'completed' %}
+                                                    <span class="badge bg-success">Completed</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ mock.status }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if mock.feedback %}
+                                                    <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#mockFeedback{{ mock.id }}">
+                                                        <i class="fas fa-eye me-1"></i> View Feedback
+                                                    </button>
+                                                    
+                                                    <!-- Modal for Mock Feedback -->
+                                                    <div class="modal fade" id="mockFeedback{{ mock.id }}" tabindex="-1" aria-labelledby="mockFeedbackLabel{{ mock.id }}" aria-hidden="true">
+                                                        <div class="modal-dialog modal-lg">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header bg-info text-white">
+                                                                    <h5 class="modal-title" id="mockFeedbackLabel{{ mock.id }}">
+                                                                        Mock Interview Feedback: {{ mock.topic }}
+                                                                    </h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="mb-3">
+                                                                        <h6>Interviewer</h6>
+                                                                        <p>{{ mock.interviewer }}</p>
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <h6>Date</h6>
+                                                                        <p>{{ mock.scheduled_date.strftime('%d %b %Y, %H:%M') }}</p>
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <h6>Feedback</h6>
+                                                                        <div class="card bg-light">
+                                                                            <div class="card-body">
+                                                                                {{ mock.feedback|nl2br }}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Pending Feedback</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="card-body">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>No mock interviews scheduled yet.
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Company Interview Feedback -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-building me-2"></i>Company Interview Feedback</h5>
+                </div>
+                
+                {% if interview_feedbacks %}
+                    <div class="card-body">
+                        {% for feedback in interview_feedbacks %}
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">{{ feedback.company }} - {{ feedback.position }}</h5>
+                                        <span class="badge bg-primary">Round: {{ feedback.round }}</span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <h6 class="card-subtitle mb-2 text-muted">
+                                            Interviewer: {{ feedback.interviewer }}
+                                        </h6>
+                                        <p class="text-muted small">
+                                            Date: {{ feedback.date.strftime('%d %b %Y') }}
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6>Rating</h6>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar 
+                                                {% if feedback.rating >= 8 %}bg-success
+                                                {% elif feedback.rating >= 6 %}bg-info
+                                                {% elif feedback.rating >= 4 %}bg-warning
+                                                {% else %}bg-danger{% endif %}"
+                                                role="progressbar" 
+                                                style="width: {{ feedback.rating * 10 }}%;" 
+                                                aria-valuenow="{{ feedback.rating }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="10">
+                                                {{ feedback.rating }}/10
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <h6>Feedback</h6>
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                {{ feedback.feedback|nl2br }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="card-body">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>No company interview feedback received yet.
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

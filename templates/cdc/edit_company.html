@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Job Posting - College Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('cdc_companies') }}">Manage Companies</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit Job</li>
+                </ol>
+            </nav>
+            <h2 class="mb-3"><i class="fas fa-edit me-2"></i>Edit Job Posting</h2>
+            <p class="text-muted">Editing: {{ job.title }} - {{ job.company.company_name }}</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Job Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('cdc_edit_company', job_id=job.id) }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.title.id }}" class="form-label">Job Title</label>
+                            {{ form.title(class="form-control") }}
+                            {% for error in form.title.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.description.id }}" class="form-label">Job Description</label>
+                            {{ form.description(class="form-control", rows=5) }}
+                            {% for error in form.description.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.cgpa_criteria.id }}" class="form-label">CGPA Criteria</label>
+                                {{ form.cgpa_criteria(class="form-control") }}
+                                {% for error in form.cgpa_criteria.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.package_offered.id }}" class="form-label">Package Offered (LPA)</label>
+                                {{ form.package_offered(class="form-control") }}
+                                {% for error in form.package_offered.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.eligible_branches.id }}" class="form-label">Eligible Branches</label>
+                            {{ form.eligible_branches(class="form-select", multiple=true, size=6) }}
+                            <div class="form-text">
+                                Hold Ctrl (Cmd on Mac) to select multiple branches.
+                            </div>
+                            {% for error in form.eligible_branches.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.application_deadline.id }}" class="form-label">Application Deadline</label>
+                                {{ form.application_deadline(class="form-control", type="datetime-local") }}
+                                {% for error in form.application_deadline.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.num_rounds.id }}" class="form-label">Number of Interview Rounds</label>
+                                {{ form.num_rounds(class="form-control") }}
+                                {% for error in form.num_rounds.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Interview Rounds Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Interview Rounds</h5>
+                </div>
+                <div class="card-body">
+                    {% if job.interview_rounds %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Round Name</th>
+                                        <th>Description</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for round in job.interview_rounds %}
+                                        <tr>
+                                            <td>{{ round.round_number }}</td>
+                                            <td>{{ round.round_name }}</td>
+                                            <td>{{ round.round_description }}</td>
+                                            <td>
+                                                {% if round.round_date %}
+                                                    {{ round.round_date.strftime('%d %b %Y, %H:%M') }}
+                                                {% else %}
+                                                    Not scheduled
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>No interview rounds scheduled yet.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

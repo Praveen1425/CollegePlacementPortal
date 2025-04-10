@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Login - College Placement Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-sign-in-alt me-2"></i>Login</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('login') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.username.id }}" class="form-label">Username</label>
+                        {{ form.username(class="form-control", placeholder="Enter your username") }}
+                        {% for error in form.username.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.password.id }}" class="form-label">Password</label>
+                        {{ form.password(class="form-control", placeholder="Enter your password") }}
+                        {% for error in form.password.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer">
+                <div class="text-center">
+                    <p class="mb-0">Don't have an account?</p>
+                    <div class="mt-2">
+                        <a href="{{ url_for('register_student') }}" class="btn btn-outline-primary btn-sm me-2">
+                            <i class="fas fa-user-graduate me-1"></i> Register as Student
+                        </a>
+                        <a href="{{ url_for('register_company') }}" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-building me-1"></i> Register as Company
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Eligible Companies - College Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Eligible Companies</li>
+                </ol>
+            </nav>
+            <h2 class="mb-3"><i class="fas fa-building me-2"></i>Eligible Companies</h2>
+        </div>
+    </div>
+    
+    {% if eligible_jobs %}
+        <div class="row">
+            {% for entry in eligible_jobs %}
+                {% set job = entry.job %}
+                {% set applied = entry.applied %}
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-primary text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">{{ job.title }}</h5>
+                                {% if applied %}
+                                    <span class="badge bg-success">Applied</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted">{{ job.company.company_name }}</h6>
+                            
+                            <div class="mb-3">
+                                <p>{{ job.description|truncate(150) }}</p>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><i class="fas fa-graduation-cap me-2"></i>CGPA Criteria</p>
+                                    <strong>{{ job.cgpa_criteria }}</strong>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><i class="fas fa-money-bill-wave me-2"></i>Package</p>
+                                    <strong>{{ job.package_offered }}</strong>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><i class="fas fa-code-branch me-2"></i>Eligible Branches</p>
+                                    <strong>{{ job.eligible_branches|replace(",", ", ") }}</strong>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><i class="fas fa-hourglass-end me-2"></i>Deadline</p>
+                                    <strong>{{ job.application_deadline.strftime('%d %b %Y, %H:%M') }}</strong>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <p class="mb-1"><i class="fas fa-tasks me-2"></i>Interview Rounds: {{ job.num_rounds }}</p>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-grid gap-2">
+                                {% if not applied %}
+                                    <form action="{{ url_for('student_apply', job_id=job.id) }}" method="POST">
+                                        <button type="submit" class="btn btn-success w-100">
+                                            <i class="fas fa-paper-plane me-2"></i>Apply Now
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <button type="button" class="btn btn-secondary w-100" disabled>
+                                        <i class="fas fa-check me-2"></i>Already Applied
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            <i class="fas fa-info-circle me-2"></i>No eligible companies found based on your profile.
+            <ul class="mt-2">
+                <li>Check your CGPA and branch to make sure they meet company requirements.</li>
+                <li>New opportunities will be posted regularly, so check back soon!</li>
+                <li>Contact the CDC for more information about upcoming placements.</li>
+            </ul>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

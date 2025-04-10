@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Update Application Status - College Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('company_students') }}">Registered Students</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Update Status</li>
+                </ol>
+            </nav>
+            <h2 class="mb-3"><i class="fas fa-edit me-2"></i>Update Application Status</h2>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Update Status</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('company_update_status', application_id=application.id) }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.status.id }}" class="form-label">Application Status</label>
+                            {{ form.status(class="form-select") }}
+                            <div class="form-text">
+                                <strong>Note:</strong> The student will be notified when you update their application status.
+                            </div>
+                            {% for error in form.status.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Status Transition Guide -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Status Transition Guide</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Status Flow</h6>
+                        <p>The typical progression of an application's status is:</p>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge bg-primary p-2">Applied</span>
+                            <i class="fas fa-arrow-right"></i>
+                            <span class="badge bg-info p-2">Shortlisted</span>
+                            <i class="fas fa-arrow-right"></i>
+                            <span class="badge bg-warning p-2">Interview Scheduled</span>
+                            <i class="fas fa-arrow-right"></i>
+                            <span class="badge bg-success p-2">Selected</span>
+                            <span class="text-muted">or</span>
+                            <span class="badge bg-danger p-2">Rejected</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h6>Status Descriptions</h6>
+                        <ul>
+                            <li><strong>Applied:</strong> Initial application received from student</li>
+                            <li><strong>Shortlisted:</strong> Application filtered for interview rounds</li>
+                            <li><strong>Interview Scheduled:</strong> Student scheduled for interviews</li>
+                            <li><strong>Selected:</strong> Student has been selected for the job</li>
+                            <li><strong>Rejected:</strong> Student was not selected for the position</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-graduate me-2"></i>Student Profile</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <i class="fas fa-user-circle fa-5x text-primary"></i>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <strong>Name:</strong> {{ student.full_name }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Roll Number:</strong> {{ student.roll_number }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Branch:</strong> {{ student.branch }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>CGPA:</strong> {{ student.cgpa }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Email:</strong> {{ student.user.email }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-briefcase me-2"></i>Job Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <strong>Position:</strong> {{ job.title }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Package:</strong> {{ job.package_offered }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Applied On:</strong> {{ application.applied_date.strftime('%d %b %Y') }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Current Status:</strong> 
+                        {% if application.status == 'applied' %}
+                            <span class="badge bg-primary">Applied</span>
+                        {% elif application.status == 'shortlisted' %}
+                            <span class="badge bg-info">Shortlisted</span>
+                        {% elif application.status == 'interview_scheduled' %}
+                            <span class="badge bg-warning">Interview Scheduled</span>
+                        {% elif application.status == 'selected' %}
+                            <span class="badge bg-success">Selected</span>
+                        {% elif application.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ application.status }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Last Updated:</strong> {{ application.updated_date.strftime('%d %b %Y, %H:%M') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Interview Feedbacks -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Interview Feedbacks</h5>
+                </div>
+                <div class="card-body">
+                    {% if application.interview_feedbacks %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Round</th>
+                                        <th>Date</th>
+                                        <th>Interviewer</th>
+                                        <th>Rating</th>
+                                        <th>Feedback</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for feedback in application.interview_feedbacks %}
+                                        <tr>
+                                            <td>{{ feedback.interview_round.round_name }}</td>
+                                            <td>{{ feedback.created_at.strftime('%d %b %Y') }}</td>
+                                            <td>{{ feedback.interviewer_name }}</td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar 
+                                                        {% if feedback.rating >= 8 %}bg-success
+                                                        {% elif feedback.rating >= 6 %}bg-info
+                                                        {% elif feedback.rating >= 4 %}bg-warning
+                                                        {% else %}bg-danger{% endif %}"
+                                                        role="progressbar" 
+                                                        style="width: {{ feedback.rating * 10 }}%;" 
+                                                        aria-valuenow="{{ feedback.rating }}" 
+                                                        aria-valuemin="0" 
+                                                        aria-valuemax="10">
+                                                        {{ feedback.rating }}/10
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ feedback.feedback }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>No interview feedback provided yet.
+                            {% if job.interview_rounds %}
+                                <div class="mt-2">
+                                    <p>Provide feedback for the interview rounds:</p>
+                                    <div>
+                                        {% for round in job.interview_rounds %}
+                                            <a href="{{ url_for('company_provide_feedback', application_id=application.id, round_id=round.id) }}" class="btn btn-sm btn-primary me-2 mb-2">
+                                                <i class="fas fa-comment me-1"></i>Feedback for {{ round.round_name }}
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

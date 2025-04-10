@@ -1,0 +1,410 @@
+{% extends "base.html" %}
+
+{% block title %}Registered Students - College Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Registered Students</li>
+                </ol>
+            </nav>
+            <h2 class="mb-3"><i class="fas fa-users me-2"></i>Manage Applications</h2>
+        </div>
+    </div>
+    
+    <!-- Job Postings Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-briefcase me-2"></i>Your Job Postings</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if jobs %}
+                        <div class="accordion" id="jobsAccordion">
+                            {% for job in jobs %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading{{ job.id }}">
+                                        <button class="accordion-button {{ 'collapsed' if loop.index > 1 else '' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ job.id }}" aria-expanded="{{ 'true' if loop.index == 1 else 'false' }}" aria-controls="collapse{{ job.id }}">
+                                            <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                                                <span>
+                                                    <strong>{{ job.title }}</strong>
+                                                    <span class="badge bg-secondary ms-2">{{ applications_by_job[job.id]|length }} Applications</span>
+                                                </span>
+                                                <span class="badge 
+                                                    {% if job.application_deadline >= now() %}
+                                                        bg-success
+                                                    {% else %}
+                                                        bg-danger
+                                                    {% endif %}">
+                                                    {% if job.application_deadline >= now() %}
+                                                        Active
+                                                    {% else %}
+                                                        Closed
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="collapse{{ job.id }}" class="accordion-collapse collapse {{ 'show' if loop.index == 1 else '' }}" aria-labelledby="heading{{ job.id }}" data-bs-parent="#jobsAccordion">
+                                        <div class="accordion-body p-0">
+                                            <div class="card-body border-bottom">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <p><strong>CGPA Criteria:</strong> {{ job.cgpa_criteria }}</p>
+                                                        <p><strong>Eligible Branches:</strong> {{ job.eligible_branches|replace(",", ", ") }}</p>
+                                                        <p><strong>Package Offered:</strong> {{ job.package_offered }}</p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <p><strong>Application Deadline:</strong> {{ job.application_deadline.strftime('%d %b %Y, %H:%M') }}</p>
+                                                        <p><strong>Number of Rounds:</strong> {{ job.num_rounds }}</p>
+                                                        <p><strong>Posted On:</strong> {{ job.created_at.strftime('%d %b %Y') }}</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="d-flex justify-content-between mt-3">
+                                                    <a href="{{ url_for('company_schedule_interview', job_id=job.id) }}" class="btn btn-primary">
+                                                        <i class="fas fa-calendar-alt me-2"></i>Schedule Interview Round
+                                                    </a>
+                                                    <button class="btn btn-info" type="button" data-bs-toggle="collapse" data-bs-target="#interviewRounds{{ job.id }}" aria-expanded="false">
+                                                        <i class="fas fa-list me-2"></i>View Interview Rounds
+                                                    </button>
+                                                </div>
+                                                
+                                                <!-- Interview Rounds Collapse -->
+                                                <div class="collapse mt-3" id="interviewRounds{{ job.id }}">
+                                                    <div class="card card-body">
+                                                        <h6 class="mb-3">Interview Rounds</h6>
+                                                        {% if job.interview_rounds %}
+                                                            <div class="table-responsive">
+                                                                <table class="table table-bordered table-sm">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>#</th>
+                                                                            <th>Round Name</th>
+                                                                            <th>Description</th>
+                                                                            <th>Date</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {% for round in job.interview_rounds %}
+                                                                            <tr>
+                                                                                <td>{{ round.round_number }}</td>
+                                                                                <td>{{ round.round_name }}</td>
+                                                                                <td>{{ round.round_description }}</td>
+                                                                                <td>
+                                                                                    {% if round.round_date %}
+                                                                                        {{ round.round_date.strftime('%d %b %Y, %H:%M') }}
+                                                                                    {% else %}
+                                                                                        Not scheduled
+                                                                                    {% endif %}
+                                                                                </td>
+                                                                            </tr>
+                                                                        {% endfor %}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        {% else %}
+                                                            <div class="alert alert-info mb-0">
+                                                                <i class="fas fa-info-circle me-2"></i>No interview rounds scheduled yet.
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Applications for this job -->
+                                            <h6 class="card-header bg-secondary text-white">Applications</h6>
+                                            {% if applications_by_job[job.id] %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover mb-0">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Student Name</th>
+                                                                <th>Roll Number</th>
+                                                                <th>Branch</th>
+                                                                <th>CGPA</th>
+                                                                <th>Applied Date</th>
+                                                                <th>Status</th>
+                                                                <th>Actions</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for application in applications_by_job[job.id] %}
+                                                                <tr>
+                                                                    <td>{{ application.student.full_name }}</td>
+                                                                    <td>{{ application.student.roll_number }}</td>
+                                                                    <td>{{ application.student.branch }}</td>
+                                                                    <td>{{ application.student.cgpa }}</td>
+                                                                    <td>{{ application.applied_date.strftime('%d %b %Y') }}</td>
+                                                                    <td>
+                                                                        {% if application.status == 'applied' %}
+                                                                            <span class="badge bg-primary">Applied</span>
+                                                                        {% elif application.status == 'shortlisted' %}
+                                                                            <span class="badge bg-info">Shortlisted</span>
+                                                                        {% elif application.status == 'interview_scheduled' %}
+                                                                            <span class="badge bg-warning">Interview Scheduled</span>
+                                                                        {% elif application.status == 'selected' %}
+                                                                            <span class="badge bg-success">Selected</span>
+                                                                        {% elif application.status == 'rejected' %}
+                                                                            <span class="badge bg-danger">Rejected</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-secondary">{{ application.status }}</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="btn-group btn-group-sm">
+                                                                            <a href="{{ url_for('company_update_status', application_id=application.id) }}" class="btn btn-warning">
+                                                                                <i class="fas fa-edit"></i> Update Status
+                                                                            </a>
+                                                                            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#viewStudent{{ application.id }}">
+                                                                                <i class="fas fa-eye"></i> View
+                                                                            </button>
+                                                                        </div>
+                                                                        
+                                                                        <!-- Provide feedback buttons for each round -->
+                                                                        <div class="mt-2">
+                                                                            {% for round in job.interview_rounds %}
+                                                                                <a href="{{ url_for('company_provide_feedback', application_id=application.id, round_id=round.id) }}" class="btn btn-sm btn-outline-primary me-1 mb-1">
+                                                                                    Feedback: Round {{ round.round_number }}
+                                                                                </a>
+                                                                            {% endfor %}
+                                                                        </div>
+                                                                        
+                                                                        <!-- Student Details Modal -->
+                                                                        <div class="modal fade" id="viewStudent{{ application.id }}" tabindex="-1" aria-hidden="true">
+                                                                            <div class="modal-dialog modal-lg">
+                                                                                <div class="modal-content">
+                                                                                    <div class="modal-header bg-primary text-white">
+                                                                                        <h5 class="modal-title">Student Profile: {{ application.student.full_name }}</h5>
+                                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                                    </div>
+                                                                                    <div class="modal-body">
+                                                                                        <div class="row">
+                                                                                            <div class="col-md-6">
+                                                                                                <h5>Personal Information</h5>
+                                                                                                <div class="mb-3">
+                                                                                                    <strong>Name:</strong> {{ application.student.full_name }}
+                                                                                                </div>
+                                                                                                <div class="mb-3">
+                                                                                                    <strong>Roll Number:</strong> {{ application.student.roll_number }}
+                                                                                                </div>
+                                                                                                <div class="mb-3">
+                                                                                                    <strong>Branch:</strong> {{ application.student.branch }}
+                                                                                                </div>
+                                                                                                <div class="mb-3">
+                                                                                                    <strong>CGPA:</strong> {{ application.student.cgpa }}
+                                                                                                </div>
+                                                                                                <div class="mb-3">
+                                                                                                    <strong>Email:</strong> {{ application.student.user.email }}
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            
+                                                                                            <div class="col-md-6">
+                                                                                                <h5>Application Details</h5>
+                                                                                                <div class="mb-3">
+                                                                                                    <strong>Applied On:</strong> {{ application.applied_date.strftime('%d %b %Y, %H:%M') }}
+                                                                                                </div>
+                                                                                                <div class="mb-3">
+                                                                                                    <strong>Status:</strong>
+                                                                                                    {% if application.status == 'applied' %}
+                                                                                                        <span class="badge bg-primary">Applied</span>
+                                                                                                    {% elif application.status == 'shortlisted' %}
+                                                                                                        <span class="badge bg-info">Shortlisted</span>
+                                                                                                    {% elif application.status == 'interview_scheduled' %}
+                                                                                                        <span class="badge bg-warning">Interview Scheduled</span>
+                                                                                                    {% elif application.status == 'selected' %}
+                                                                                                        <span class="badge bg-success">Selected</span>
+                                                                                                    {% elif application.status == 'rejected' %}
+                                                                                                        <span class="badge bg-danger">Rejected</span>
+                                                                                                    {% else %}
+                                                                                                        <span class="badge bg-secondary">{{ application.status }}</span>
+                                                                                                    {% endif %}
+                                                                                                </div>
+                                                                                                <div class="mb-3">
+                                                                                                    <strong>Last Updated:</strong> {{ application.updated_date.strftime('%d %b %Y, %H:%M') }}
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        
+                                                                                        {% if application.student.resume %}
+                                                                                            <div class="mt-3">
+                                                                                                <h5>Resume</h5>
+                                                                                                <div class="card bg-light">
+                                                                                                    <div class="card-body">
+                                                                                                        <pre class="mb-0">{{ application.student.resume }}</pre>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        {% endif %}
+                                                                                        
+                                                                                        <!-- Interview Feedbacks -->
+                                                                                        {% if application.interview_feedbacks %}
+                                                                                            <div class="mt-3">
+                                                                                                <h5>Interview Feedback</h5>
+                                                                                                <div class="table-responsive">
+                                                                                                    <table class="table table-bordered">
+                                                                                                        <thead>
+                                                                                                            <tr>
+                                                                                                                <th>Round</th>
+                                                                                                                <th>Interviewer</th>
+                                                                                                                <th>Rating</th>
+                                                                                                                <th>Feedback</th>
+                                                                                                            </tr>
+                                                                                                        </thead>
+                                                                                                        <tbody>
+                                                                                                            {% for feedback in application.interview_feedbacks %}
+                                                                                                                <tr>
+                                                                                                                    <td>{{ feedback.interview_round.round_name }}</td>
+                                                                                                                    <td>{{ feedback.interviewer_name }}</td>
+                                                                                                                    <td>{{ feedback.rating }}/10</td>
+                                                                                                                    <td>{{ feedback.feedback }}</td>
+                                                                                                                </tr>
+                                                                                                            {% endfor %}
+                                                                                                        </tbody>
+                                                                                                    </table>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                    <div class="modal-footer">
+                                                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                                                        <a href="{{ url_for('company_update_status', application_id=application.id) }}" class="btn btn-primary">
+                                                                                            <i class="fas fa-edit me-1"></i>Update Status
+                                                                                        </a>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% else %}
+                                                <div class="card-body">
+                                                    <div class="alert alert-info mb-0">
+                                                        <i class="fas fa-info-circle me-2"></i>No applications received for this job yet.
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="card-body">
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>No job postings found. Please contact the CDC to add job postings for your company.
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Application Statistics -->
+    {% if jobs %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Application Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <div class="card bg-primary text-white h-100">
+                                    <div class="card-body text-center">
+                                        {% set total_applied = 0 %}
+                                        {% for job in jobs %}
+                                            {% for application in applications_by_job[job.id] %}
+                                                {% if application.status == 'applied' %}
+                                                    {% set total_applied = total_applied + 1 %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                        
+                                        <h3 class="mb-2">{{ total_applied }}</h3>
+                                        <p class="mb-0">Applied</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <div class="card bg-info text-white h-100">
+                                    <div class="card-body text-center">
+                                        {% set total_shortlisted = 0 %}
+                                        {% for job in jobs %}
+                                            {% for application in applications_by_job[job.id] %}
+                                                {% if application.status == 'shortlisted' %}
+                                                    {% set total_shortlisted = total_shortlisted + 1 %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                        
+                                        <h3 class="mb-2">{{ total_shortlisted }}</h3>
+                                        <p class="mb-0">Shortlisted</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <div class="card bg-success text-white h-100">
+                                    <div class="card-body text-center">
+                                        {% set total_selected = 0 %}
+                                        {% for job in jobs %}
+                                            {% for application in applications_by_job[job.id] %}
+                                                {% if application.status == 'selected' %}
+                                                    {% set total_selected = total_selected + 1 %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                        
+                                        <h3 class="mb-2">{{ total_selected }}</h3>
+                                        <p class="mb-0">Selected</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <div class="card bg-danger text-white h-100">
+                                    <div class="card-body text-center">
+                                        {% set total_rejected = 0 %}
+                                        {% for job in jobs %}
+                                            {% for application in applications_by_job[job.id] %}
+                                                {% if application.status == 'rejected' %}
+                                                    {% set total_rejected = total_rejected + 1 %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                        
+                                        <h3 class="mb-2">{{ total_rejected }}</h3>
+                                        <p class="mb-0">Rejected</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Add the current datetime for template usage
+    var now = function() {
+        return new Date();
+    }
+</script>
+{% endblock %}

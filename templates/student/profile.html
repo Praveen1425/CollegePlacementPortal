@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - College Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">My Profile</li>
+                </ol>
+            </nav>
+            <h2 class="mb-3"><i class="fas fa-user-circle me-2"></i>Student Profile</h2>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-user-graduate fa-5x text-primary mb-3"></i>
+                        <h4>{{ student.full_name }}</h4>
+                        <p class="text-muted mb-0">{{ student.roll_number }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6><i class="fas fa-envelope me-2"></i>Email</h6>
+                        <p class="text-muted">{{ current_user.email }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6><i class="fas fa-code-branch me-2"></i>Branch</h6>
+                        <p class="text-muted">{{ student.branch }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6><i class="fas fa-star me-2"></i>CGPA</h6>
+                        <p class="text-muted">{{ student.cgpa }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6><i class="fas fa-clock me-2"></i>Registered On</h6>
+                        <p class="text-muted">{{ current_user.created_at.strftime('%d %b %Y') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Update Profile</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('student_profile') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.full_name.id }}" class="form-label">Full Name</label>
+                            {{ form.full_name(class="form-control") }}
+                            {% for error in form.full_name.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.branch.id }}" class="form-label">Branch</label>
+                                {{ form.branch(class="form-select") }}
+                                {% for error in form.branch.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.cgpa.id }}" class="form-label">CGPA</label>
+                                {{ form.cgpa(class="form-control") }}
+                                {% for error in form.cgpa.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.resume.id }}" class="form-label">Resume/CV</label>
+                            {{ form.resume(class="form-control", rows=10) }}
+                            <div class="form-text">
+                                Enter your resume content here. This will be visible to companies you apply to.
+                            </div>
+                            {% for error in form.resume.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

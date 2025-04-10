@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Student Applications - College Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Student Applications</li>
+                </ol>
+            </nav>
+            <h2 class="mb-3"><i class="fas fa-clipboard-list me-2"></i>Student Applications</h2>
+        </div>
+    </div>
+    
+    <!-- Applications List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>All Applications</h5>
+                </div>
+                
+                {% if applications %}
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Student Name</th>
+                                        <th>Roll Number</th>
+                                        <th>CGPA</th>
+                                        <th>Company</th>
+                                        <th>Job Title</th>
+                                        <th>Applied Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for application in applications %}
+                                        <tr>
+                                            <td>{{ application.student.full_name }}</td>
+                                            <td>{{ application.student.roll_number }}</td>
+                                            <td>{{ application.student.cgpa }}</td>
+                                            <td>{{ application.job_posting.company.company_name }}</td>
+                                            <td>{{ application.job_posting.title }}</td>
+                                            <td>{{ application.applied_date.strftime('%d %b %Y') }}</td>
+                                            <td>
+                                                {% if application.status == 'applied' %}
+                                                    <span class="badge bg-primary">Applied</span>
+                                                {% elif application.status == 'shortlisted' %}
+                                                    <span class="badge bg-info">Shortlisted</span>
+                                                {% elif application.status == 'interview_scheduled' %}
+                                                    <span class="badge bg-warning">Interview Scheduled</span>
+                                                {% elif application.status == 'selected' %}
+                                                    <span class="badge bg-success">Selected</span>
+                                                {% elif application.status == 'rejected' %}
+                                                    <span class="badge bg-danger">Rejected</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ application.status }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewApplication{{ application.id }}">
+                                                    <i class="fas fa-eye"></i> View
+                                                </button>
+                                                
+                                                <!-- Modal for Application Details -->
+                                                <div class="modal fade" id="viewApplication{{ application.id }}" tabindex="-1" aria-hidden="true">
+                                                    <div class="modal-dialog modal-lg">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header bg-primary text-white">
+                                                                <h5 class="modal-title">Application Details</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="row">
+                                                                    <div class="col-md-6">
+                                                                        <h5>Student Information</h5>
+                                                                        <div class="mb-3">
+                                                                            <strong>Name:</strong> {{ application.student.full_name }}
+                                                                        </div>
+                                                                        <div class="mb-3">
+                                                                            <strong>Roll Number:</strong> {{ application.student.roll_number }}
+                                                                        </div>
+                                                                        <div class="mb-3">
+                                                                            <strong>Branch:</strong> {{ application.student.branch }}
+                                                                        </div>
+                                                                        <div class="mb-3">
+                                                                            <strong>CGPA:</strong> {{ application.student.cgpa }}
+                                                                        </div>
+                                                                        <div class="mb-3">
+                                                                            <strong>Email:</strong> {{ application.student.user.email }}
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <div class="col-md-6">
+                                                                        <h5>Job Information</h5>
+                                                                        <div class="mb-3">
+                                                                            <strong>Company:</strong> {{ application.job_posting.company.company_name }}
+                                                                        </div>
+                                                                        <div class="mb-3">
+                                                                            <strong>Position:</strong> {{ application.job_posting.title }}
+                                                                        </div>
+                                                                        <div class="mb-3">
+                                                                            <strong>Package:</strong> {{ application.job_posting.package_offered }}
+                                                                        </div>
+                                                                        <div class="mb-3">
+                                                                            <strong>Application Status:</strong>
+                                                                            {% if application.status == 'applied' %}
+                                                                                <span class="badge bg-primary">Applied</span>
+                                                                            {% elif application.status == 'shortlisted' %}
+                                                                                <span class="badge bg-info">Shortlisted</span>
+                                                                            {% elif application.status == 'interview_scheduled' %}
+                                                                                <span class="badge bg-warning">Interview Scheduled</span>
+                                                                            {% elif application.status == 'selected' %}
+                                                                                <span class="badge bg-success">Selected</span>
+                                                                            {% elif application.status == 'rejected' %}
+                                                                                <span class="badge bg-danger">Rejected</span>
+                                                                            {% else %}
+                                                                                <span class="badge bg-secondary">{{ application.status }}</span>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                        <div class="mb-3">
+                                                                            <strong>Applied On:</strong> {{ application.applied_date.strftime('%d %b %Y, %H:%M') }}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                {% if application.student.resume %}
+                                                                    <div class="mt-3">
+                                                                        <h5>Resume</h5>
+                                                                        <div class="card bg-light">
+                                                                            <div class="card-body">
+                                                                                <pre class="mb-0">{{ application.student.resume }}</pre>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                {% endif %}
+                                                                
+                                                                <!-- Interview Feedbacks -->
+                                                                {% if application.interview_feedbacks %}
+                                                                    <div class="mt-3">
+                                                                        <h5>Interview Feedback</h5>
+                                                                        <div class="table-responsive">
+                                                                            <table class="table table-bordered">
+                                                                                <thead>
+                                                                                    <tr>
+                                                                                        <th>Round</th>
+                                                                                        <th>Interviewer</th>
+                                                                                        <th>Rating</th>
+                                                                                        <th>Feedback</th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody>
+                                                                                    {% for feedback in application.interview_feedbacks %}
+                                                                                        <tr>
+                                                                                            <td>{{ feedback.interview_round.round_name }}</td>
+                                                                                            <td>{{ feedback.interviewer_name }}</td>
+                                                                                            <td>{{ feedback.rating }}/10</td>
+                                                                                            <td>{{ feedback.feedback }}</td>
+                                                                                        </tr>
+                                                                                    {% endfor %}
+                                                                                </tbody>
+                                                                            </table>
+                                                                        </div>
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="card-body">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>No applications found.
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Applications Stats -->
+    {% if applications %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Application Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body text-center py-3">
+                                        <h3 class="mb-2">{{ applications|selectattr('status', 'equalto', 'applied')|list|length }}</h3>
+                                        <p class="mb-0">Applied</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body text-center py-3">
+                                        <h3 class="mb-2">{{ applications|selectattr('status', 'equalto', 'shortlisted')|list|length }}</h3>
+                                        <p class="mb-0">Shortlisted</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center py-3">
+                                        <h3 class="mb-2">{{ applications|selectattr('status', 'equalto', 'selected')|list|length }}</h3>
+                                        <p class="mb-0">Selected</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card bg-danger text-white">
+                                    <div class="card-body text-center py-3">
+                                        <h3 class="mb-2">{{ applications|selectattr('status', 'equalto', 'rejected')|list|length }}</h3>
+                                        <p class="mb-0">Rejected</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

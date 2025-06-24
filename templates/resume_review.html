@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Resume Review - College Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Resume Review & Analysis
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Student Info -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-user me-2"></i>Student Information</h5>
+                            <p><strong>Name:</strong> {{ student.full_name }}</p>
+                            <p><strong>Roll Number:</strong> {{ student.roll_number }}</p>
+                            <p><strong>Branch:</strong> {{ student.branch }}</p>
+                            <p><strong>CGPA:</strong> {{ student.cgpa }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-cog me-2"></i>Review Options</h5>
+                            <div class="btn-group-vertical w-100" role="group">
+                                <a href="{{ url_for('routes.resume_review', type='comprehensive') }}" 
+                                   class="btn btn-outline-primary mb-2">
+                                    <i class="fas fa-search me-2"></i>Comprehensive Review
+                                </a>
+                                <a href="{{ url_for('routes.resume_review', type='grammar') }}" 
+                                   class="btn btn-outline-info mb-2">
+                                    <i class="fas fa-language me-2"></i>Grammar & Language
+                                </a>
+                                <a href="{{ url_for('routes.resume_review', type='skills') }}" 
+                                   class="btn btn-outline-success mb-2">
+                                    <i class="fas fa-tools me-2"></i>Skills Analysis
+                                </a>
+                                <a href="{{ url_for('routes.resume_review', type='formatting') }}" 
+                                   class="btn btn-outline-warning mb-2">
+                                    <i class="fas fa-paint-brush me-2"></i>Formatting & Structure
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Review Type -->
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Current Review Type: 
+                            <span class="badge bg-primary">{{ review_type.title() }}</span>
+                        </h6>
+                        <form method="POST" class="mt-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-magic me-2"></i>Generate AI Analysis
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Resume Content -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5><i class="fas fa-file-text me-2"></i>Your Resume Content</h5>
+                            <div class="resume-content">
+                                <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit; color: #333; background-color: transparent;">{{ resume_text or 'No resume content available.' }}</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Analysis Results -->
+                    {% if review_result %}
+                    <div class="row">
+                        <div class="col-12">
+                            <h5><i class="fas fa-robot me-2"></i>AI Analysis Results</h5>
+                            <div class="analysis-container">
+                                <div class="ai-analysis-content">
+                                    {{ review_result | replace('<b>', '') | replace('</b>', '') | replace('<strong>', '') | replace('</strong>', '') | replace('\n', '<br>') | safe }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Quick Actions -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5><i class="fas fa-lightbulb me-2"></i>Quick Actions</h5>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="{{ url_for('routes.student_profile') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-edit me-2"></i>Edit Resume
+                                </a>
+                                <a href="{{ url_for('routes.chatbot') }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-comments me-2"></i>Ask Chatbot
+                                </a>
+                                <a href="{{ url_for('routes.student_dashboard') }}" class="btn btn-outline-success">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head_content %}
+<style>
+.ai-analysis-content {
+    line-height: 1.8;
+    font-size: 15px;
+    color: #333 !important;
+    background-color: transparent !important;
+    padding: 0;
+    margin: 0;
+}
+
+.ai-analysis-content h1, .ai-analysis-content h2, .ai-analysis-content h3 {
+    color: #007bff !important;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.ai-analysis-content p {
+    margin-bottom: 1rem;
+    color: #333 !important;
+}
+
+.ai-analysis-content ul, .ai-analysis-content ol {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+
+.ai-analysis-content li {
+    margin-bottom: 0.5rem;
+    color: #333 !important;
+}
+
+/* Ensure numbers and bullet points are visible */
+.ai-analysis-content ol {
+    counter-reset: item;
+}
+
+.ai-analysis-content ol li {
+    display: block;
+    margin-bottom: 0.75rem;
+}
+
+.ai-analysis-content ol li:before {
+    content: counter(item) ". ";
+    counter-increment: item;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.ai-analysis-content ul li:before {
+    content: "• ";
+    color: #007bff;
+    font-weight: bold;
+}
+
+.btn-group-vertical .btn {
+    text-align: left;
+    border-radius: 0.375rem !important;
+}
+
+.btn-group-vertical .btn:first-child {
+    border-top-left-radius: 0.375rem !important;
+    border-top-right-radius: 0.375rem !important;
+}
+
+.btn-group-vertical .btn:last-child {
+    border-bottom-left-radius: 0.375rem !important;
+    border-bottom-right-radius: 0.375rem !important;
+}
+
+/* Ensure resume content is also readable */
+.resume-content {
+    background-color: #ffffff !important;
+    color: #333 !important;
+    border: 1px solid #dee2e6;
+    padding: 1rem;
+    border-radius: 0.375rem;
+}
+
+/* Analysis container styling */
+.analysis-container {
+    background-color: #f8f9fa !important;
+    border: 1px solid #dee2e6;
+    border-left: 4px solid #007bff;
+    border-radius: 0.375rem;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+/* Ensure text is always visible */
+.analysis-container * {
+    color: #333 !important;
+}
+
+.analysis-container h1, .analysis-container h2, .analysis-container h3 {
+    color: #007bff !important;
+}
+</style>
+{% endblock %} 

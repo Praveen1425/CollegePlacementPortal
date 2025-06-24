@@ -2,87 +2,292 @@
 
 {% block title %}Eligible Companies - College Placement Portal{% endblock %}
 
+{% block head_content %}
+<style>
+    .job-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+        margin-bottom: 20px;
+    }
+    
+    .job-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .job-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px 15px 0 0;
+        padding: 20px;
+    }
+    
+    .eligibility-badge {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+    }
+    
+    .resume-upload {
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 15px;
+        transition: border-color 0.3s;
+    }
+    
+    .resume-upload:hover {
+        border-color: #007bff;
+    }
+    
+    .resume-upload input[type="file"] {
+        display: none;
+    }
+    
+    .resume-label {
+        cursor: pointer;
+        color: #007bff;
+        font-weight: 500;
+    }
+    
+    .resume-label:hover {
+        text-decoration: underline;
+    }
+    
+    .ai-insight {
+        background: #e3f2fd;
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 15px;
+        border-left: 4px solid #1976d2;
+    }
+    
+    .match-score {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        margin: 0 auto 10px;
+    }
+    
+    .quick-apply {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        border: none;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: transform 0.2s;
+    }
+    
+    .quick-apply:hover {
+        transform: translateY(-2px);
+        color: white;
+    }
+    
+    .applied-badge {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="row mb-4">
         <div class="col-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('routes.dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Eligible Companies</li>
                 </ol>
             </nav>
             <h2 class="mb-3"><i class="fas fa-building me-2"></i>Eligible Companies</h2>
+            <p class="text-muted">Browse and apply to companies that match your profile. Upload your resume for AI-powered insights!</p>
         </div>
     </div>
     
-    {% if eligible_jobs %}
+    {% if jobs %}
         <div class="row">
-            {% for entry in eligible_jobs %}
-                {% set job = entry.job %}
-                {% set applied = entry.applied %}
+            {% for job in jobs %}
+                {% set applied = job.id in applied_job_ids %}
                 
-                <div class="col-md-6 mb-4">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-header bg-primary text-white">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0">{{ job.title }}</h5>
-                                {% if applied %}
-                                    <span class="badge bg-success">Applied</span>
-                                {% endif %}
+                <div class="col-lg-6 mb-4">
+                    <div class="job-card card">
+                        <div class="job-header">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="mb-1">{{ job.title }}</h5>
+                                    <p class="mb-0 opacity-75">{{ job.company.company_name }}</p>
+                                </div>
+                                <div class="text-end">
+                                    {% if applied %}
+                                        <span class="applied-badge">
+                                            <i class="fas fa-check me-1"></i>Applied
+                                        </span>
+                                    {% else %}
+                                        <span class="eligibility-badge">
+                                            <i class="fas fa-star me-1"></i>Eligible
+                                        </span>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
+                        
                         <div class="card-body">
-                            <h6 class="card-subtitle mb-2 text-muted">{{ job.company.company_name }}</h6>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="match-score">
+                                        {% set cgpa_match = (current_user.student_profile.cgpa / job.cgpa_criteria * 100) | round(1) %}
+                                        {% if cgpa_match > 100 %}{{ 100 }}{% else %}{{ cgpa_match }}{% endif %}%
+                                    </div>
+                                    <small class="text-center d-block">CGPA Match</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Requirements</h6>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-graduation-cap me-2"></i>CGPA ≥ {{ job.cgpa_criteria }}</li>
+                                        <li><i class="fas fa-code-branch me-2"></i>{{ job.eligible_branches|replace(",", ", ") }}</li>
+                                        <li><i class="fas fa-money-bill-wave me-2"></i>{{ job.package_offered }}</li>
+                                        <li><i class="fas fa-tasks me-2"></i>{{ job.num_rounds }} rounds</li>
+                                    </ul>
+                                </div>
+                            </div>
                             
                             <div class="mb-3">
-                                <p>{{ job.description|truncate(150) }}</p>
+                                <h6>Job Description</h6>
+                                <p class="text-muted">{{ job.description|truncate(200) }}</p>
                             </div>
                             
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <p class="mb-1"><i class="fas fa-graduation-cap me-2"></i>CGPA Criteria</p>
-                                    <strong>{{ job.cgpa_criteria }}</strong>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>Deadline:<br>
+                                        <strong>{{ job.application_deadline.strftime('%d %b %Y') }}</strong>
+                                    </small>
                                 </div>
                                 <div class="col-md-6">
-                                    <p class="mb-1"><i class="fas fa-money-bill-wave me-2"></i>Package</p>
-                                    <strong>{{ job.package_offered }}</strong>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>Posted:<br>
+                                        <strong>{{ job.created_at.strftime('%d %b %Y') }}</strong>
+                                    </small>
                                 </div>
                             </div>
                             
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <p class="mb-1"><i class="fas fa-code-branch me-2"></i>Eligible Branches</p>
-                                    <strong>{{ job.eligible_branches|replace(",", ", ") }}</strong>
-                                </div>
-                                <div class="col-md-6">
-                                    <p class="mb-1"><i class="fas fa-hourglass-end me-2"></i>Deadline</p>
-                                    <strong>{{ job.application_deadline.strftime('%d %b %Y, %H:%M') }}</strong>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-2">
-                                <p class="mb-1"><i class="fas fa-tasks me-2"></i>Interview Rounds: {{ job.num_rounds }}</p>
-                            </div>
-                        </div>
-                        <div class="card-footer">
-                            <div class="d-grid gap-2">
-                                {% if not applied %}
-                                    <form action="{{ url_for('student_apply', job_id=job.id) }}" method="POST">
-                                        <button type="submit" class="btn btn-success w-100">
-                                            <i class="fas fa-paper-plane me-2"></i>Apply Now
+                            {% if not applied %}
+                                <!-- Resume Upload Section -->
+                                <form action="{{ url_for('routes.apply_for_job', job_id=job.id) }}" method="POST" enctype="multipart/form-data" class="apply-form">
+                                    <div class="resume-upload">
+                                        <input type="file" id="resume_{{ job.id }}" name="resume" accept=".pdf,.docx" class="resume-input">
+                                        <label for="resume_{{ job.id }}" class="resume-label">
+                                            <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i><br>
+                                            <strong>Upload Resume (PDF/DOCX)</strong><br>
+                                            <small>Get AI-powered analysis and insights</small>
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- AI Insight Preview -->
+                                    <div class="ai-insight">
+                                        <h6><i class="fas fa-robot me-2"></i>AI Preview</h6>
+                                        <p class="mb-2">
+                                            <strong>Your Profile:</strong> {{ current_user.student_profile.branch }} student with {{ current_user.student_profile.cgpa }} CGPA
+                                        </p>
+                                        <p class="mb-0">
+                                            <strong>Match Analysis:</strong> 
+                                            {% if current_user.student_profile.cgpa >= job.cgpa_criteria %}
+                                                ✅ CGPA requirement met
+                                            {% else %}
+                                                ⚠️ CGPA below requirement
+                                            {% endif %}
+                                            {% if current_user.student_profile.branch in job.eligible_branches %}
+                                                ✅ Branch eligible
+                                            {% else %}
+                                                ❌ Branch not eligible
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2 mt-3">
+                                        <button type="submit" class="btn quick-apply">
+                                            <i class="fas fa-paper-plane me-2"></i>Apply with AI Analysis
                                         </button>
-                                    </form>
-                                {% else %}
-                                    <button type="button" class="btn btn-secondary w-100" disabled>
-                                        <i class="fas fa-check me-2"></i>Already Applied
-                                    </button>
-                                {% endif %}
-                            </div>
+                                        <a href="{{ url_for('routes.chatbot') }}" class="btn btn-outline-primary">
+                                            <i class="fas fa-robot me-2"></i>Ask AI for Advice
+                                        </a>
+                                    </div>
+                                </form>
+                            {% else %}
+                                <div class="text-center">
+                                    <div class="applied-badge mb-3" style="background: #28a745; color: white;">
+                                        <i class="fas fa-check-circle me-2"></i>Application Submitted
+                                    </div>
+                                    <p class="text-muted mb-3">Your application is under review. Check your application status for updates.</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('routes.student_applications') }}" class="btn btn-primary">
+                                            <i class="fas fa-clipboard-list me-2"></i>View Application
+                                        </a>
+                                        <a href="{{ url_for('routes.chatbot') }}" class="btn btn-outline-primary">
+                                            <i class="fas fa-robot me-2"></i>Get Interview Prep
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             {% endfor %}
+        </div>
+        
+        <!-- AI Recommendations -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-lightbulb me-2"></i>AI Recommendations
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-chart-line fa-2x text-primary mb-2"></i>
+                                    <h6>Selection Chances</h6>
+                                    <p class="text-muted">AI analyzes your profile against job requirements to predict selection probability</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-file-alt fa-2x text-success mb-2"></i>
+                                    <h6>Resume Optimization</h6>
+                                    <p class="text-muted">Get personalized feedback on how to improve your resume for specific jobs</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-comments fa-2x text-warning mb-2"></i>
+                                    <h6>Interview Prep</h6>
+                                    <p class="text-muted">Access AI-generated interview questions and preparation tips</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     {% else %}
         <div class="alert alert-info" role="alert">
@@ -92,7 +297,48 @@
                 <li>New opportunities will be posted regularly, so check back soon!</li>
                 <li>Contact the CDC for more information about upcoming placements.</li>
             </ul>
+            <div class="mt-3">
+                <a href="{{ url_for('routes.chatbot') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-robot me-2"></i>Ask AI for Career Advice
+                </a>
+            </div>
         </div>
     {% endif %}
 </div>
+
+<script>
+// File input handling
+document.querySelectorAll('.resume-input').forEach(input => {
+    input.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const label = this.nextElementSibling;
+        
+        if (file) {
+            label.innerHTML = `
+                <i class="fas fa-check-circle text-success fa-2x mb-2"></i><br>
+                <strong>${file.name}</strong><br>
+                <small>Ready to upload with AI analysis</small>
+            `;
+        } else {
+            label.innerHTML = `
+                <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i><br>
+                <strong>Upload Resume (PDF/DOCX)</strong><br>
+                <small>Get AI-powered analysis and insights</small>
+            `;
+        }
+    });
+});
+
+// Form validation
+document.querySelectorAll('.apply-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        const resumeInput = this.querySelector('input[type="file"]');
+        if (!resumeInput.files[0]) {
+            e.preventDefault();
+            alert('Please upload your resume before applying.');
+            return false;
+        }
+    });
+});
+</script>
 {% endblock %}

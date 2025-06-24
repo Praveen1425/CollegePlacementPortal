@@ -2,13 +2,90 @@
 
 {% block title %}My Applications - College Placement Portal{% endblock %}
 
+{% block head_content %}
+<style>
+    .prediction-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .prediction-score {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .prediction-bar {
+        width: 100%;
+        height: 15px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 15px;
+    }
+    
+    .prediction-fill {
+        height: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        transition: width 0.5s ease;
+    }
+    
+    .application-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        transition: transform 0.2s;
+    }
+    
+    .application-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .status-badge {
+        font-size: 0.8rem;
+        padding: 8px 12px;
+        border-radius: 20px;
+    }
+    
+    .ai-insights {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 15px;
+        border-left: 4px solid #007bff;
+    }
+    
+    .resume-analysis-link {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .resume-analysis-link:hover {
+        text-decoration: underline;
+    }
+    
+    .chatbot-suggestion {
+        background: #e3f2fd;
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 15px;
+        border-left: 4px solid #1976d2;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="row mb-4">
         <div class="col-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('routes.dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item active" aria-current="page">My Applications</li>
                 </ol>
             </nav>
@@ -17,72 +94,157 @@
     </div>
     
     {% if applications %}
-        <div class="row">
+        <!-- AI Insights Summary -->
+        <div class="row mb-4">
             <div class="col-12">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">Application Status</h5>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Job Title</th>
-                                        <th>Company</th>
-                                        <th>Applied Date</th>
-                                        <th>Status</th>
-                                        <th>Last Updated</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for application in applications %}
-                                        <tr>
-                                            <td>{{ application.job_posting.title }}</td>
-                                            <td>{{ application.job_posting.company.company_name }}</td>
-                                            <td>{{ application.applied_date.strftime('%d %b %Y') }}</td>
-                                            <td>
-                                                {% if application.status == 'applied' %}
-                                                    <span class="badge bg-primary">Applied</span>
-                                                {% elif application.status == 'shortlisted' %}
-                                                    <span class="badge bg-info">Shortlisted</span>
-                                                {% elif application.status == 'interview_scheduled' %}
-                                                    <span class="badge bg-warning">Interview Scheduled</span>
-                                                {% elif application.status == 'selected' %}
-                                                    <span class="badge bg-success">Selected</span>
-                                                {% elif application.status == 'rejected' %}
-                                                    <span class="badge bg-danger">Rejected</span>
-                                                {% else %}
-                                                    <span class="badge bg-secondary">{{ application.status }}</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>{{ application.updated_date.strftime('%d %b %Y') }}</td>
-                                            <td>
-                                                {% if application.status == 'applied' %}
-                                                    <form action="{{ url_for('student_withdraw', application_id=application.id) }}" method="POST" class="d-inline">
-                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to withdraw this application?')">
-                                                            <i class="fas fa-times"></i> Withdraw
-                                                        </button>
-                                                    </form>
-                                                {% elif application.interview_feedbacks %}
-                                                    <a href="{{ url_for('student_feedback') }}" class="btn btn-sm btn-info">
-                                                        <i class="fas fa-comment"></i> View Feedback
-                                                    </a>
-                                                {% else %}
-                                                    <button class="btn btn-sm btn-secondary" disabled>
-                                                        <i class="fas fa-hourglass"></i> Awaiting
-                                                    </button>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                <div class="prediction-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="mb-2">
+                                <i class="fas fa-robot me-2"></i>AI Selection Analysis
+                            </h5>
+                            <p class="mb-0 opacity-75">
+                                Based on your applications and profile, here's your overall selection probability
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            {% set avg_score = applications | selectattr('selection_prediction') | map(attribute='selection_prediction.prediction_score') | list | sum / (applications | selectattr('selection_prediction') | list | length) if applications | selectattr('selection_prediction') | list | length > 0 else 0 %}
+                            <div class="prediction-score">{{ "%.1f"|format(avg_score) }}%</div>
+                            <div class="prediction-bar">
+                                <div class="prediction-fill" style="width: {{ avg_score }}%"></div>
+                            </div>
+                            <small>Average Selection Chance</small>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+        
+        <!-- Applications List -->
+        <div class="row">
+            {% for application in applications %}
+            <div class="col-12 mb-4">
+                <div class="application-card card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">{{ application.job_posting.title }}</h5>
+                            <p class="mb-0 text-muted">{{ application.job_posting.company.company_name }}</p>
+                        </div>
+                        <div class="text-end">
+                            <span class="status-badge badge 
+                                {% if application.status == 'applied' %}bg-primary
+                                {% elif application.status == 'shortlisted' %}bg-info
+                                {% elif application.status == 'interview_scheduled' %}bg-warning
+                                {% elif application.status == 'selected' %}bg-success
+                                {% elif application.status == 'rejected' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ application.status.replace('_', ' ').title() }}
+                            </span>
+                            <br>
+                            <small class="text-muted">Applied: {{ application.applied_date.strftime('%d %b %Y') }}</small>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6>Job Details</h6>
+                                <p class="text-muted mb-2">{{ application.job_posting.description[:200] }}...</p>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-sm-6">
+                                        <strong>CGPA Requirement:</strong> {{ application.job_posting.cgpa_criteria }}<br>
+                                        <strong>Package:</strong> {{ application.job_posting.package_offered }}
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <strong>Deadline:</strong> {{ application.job_posting.application_deadline.strftime('%d %b %Y') }}<br>
+                                        <strong>Interview Rounds:</strong> {{ application.job_posting.num_rounds }}
+                                    </div>
+                                </div>
+                                
+                                <!-- AI Selection Prediction -->
+                                {% if application.selection_prediction %}
+                                <div class="ai-insights">
+                                    <h6><i class="fas fa-chart-line me-2"></i>AI Selection Prediction</h6>
+                                    <div class="row align-items-center">
+                                        <div class="col-md-3">
+                                            <div class="prediction-score" style="font-size: 1.5rem;">
+                                                {{ "%.1f"|format(application.selection_prediction.prediction_score) }}%
+                                            </div>
+                                            <small>Selection Chance</small>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="prediction-bar">
+                                                <div class="prediction-fill" style="width: {{ application.selection_prediction.prediction_score }}%"></div>
+                                            </div>
+                                            <small>Confidence: {{ "%.1f"|format(application.selection_prediction.confidence_level * 100) }}%</small>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <a href="{{ url_for('routes.chatbot') }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-robot me-1"></i>Ask AI
+                                            </a>
+                                        </div>
+                                    </div>
+                                    {% if application.selection_prediction.reasoning %}
+                                    <div class="mt-2">
+                                        <small><strong>AI Reasoning:</strong> {{ application.selection_prediction.reasoning[:150] }}...</small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Resume Analysis Link -->
+                                {% if application.resume_file %}
+                                <div class="mt-3">
+                                    <a href="{{ url_for('analyze_resume') }}" class="resume-analysis-link">
+                                        <i class="fas fa-file-alt me-1"></i>Analyze Resume for this Job
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <h6>Actions</h6>
+                                {% if application.status == 'applied' %}
+                                    <form action="{{ url_for('student_withdraw', application_id=application.id) }}" method="POST" class="mb-2">
+                                        <button type="submit" class="btn btn-sm btn-danger w-100" 
+                                                onclick="return confirm('Are you sure you want to withdraw this application?')">
+                                            <i class="fas fa-times me-1"></i>Withdraw
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                
+                                {% if application.interview_feedbacks %}
+                                    <a href="{{ url_for('student_feedback') }}" class="btn btn-sm btn-info w-100 mb-2">
+                                        <i class="fas fa-comment me-1"></i>View Feedback
+                                    </a>
+                                {% endif %}
+                                
+                                <a href="{{ url_for('routes.chatbot') }}" class="btn btn-outline-primary ms-2">
+                                    <i class="fas fa-robot me-1"></i>Get AI Advice
+                                </a>
+                                
+                                <!-- Chatbot Suggestions -->
+                                <div class="chatbot-suggestion mt-3">
+                                    <small>
+                                        <strong>AI Suggestion:</strong><br>
+                                        {% if application.status == 'applied' %}
+                                            Ask the AI about interview preparation for {{ application.job_posting.title }}
+                                        {% elif application.status == 'shortlisted' %}
+                                            Get mock interview questions for {{ application.job_posting.company.company_name }}
+                                        {% elif application.status == 'interview_scheduled' %}
+                                            Practice communication skills and technical questions
+                                        {% else %}
+                                            Ask for feedback improvement strategies
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
         
         <!-- Application Timeline -->
@@ -103,25 +265,21 @@
                                         {% else %}bg-primary{% endif %}">
                                     </div>
                                     <div class="timeline-content">
-                                        <h4 class="mb-1">{{ application.job_posting.title }} at {{ application.job_posting.company.company_name }}</h4>
+                                        <h6 class="mb-1">{{ application.job_posting.title }} at {{ application.job_posting.company.company_name }}</h6>
                                         <p class="text-muted mb-2">Applied on {{ application.applied_date.strftime('%d %b %Y') }}</p>
                                         
                                         <div class="card mb-3">
                                             <div class="card-body py-2">
                                                 <strong>Current Status:</strong> 
-                                                {% if application.status == 'applied' %}
-                                                    <span class="badge bg-primary">Applied</span>
-                                                {% elif application.status == 'shortlisted' %}
-                                                    <span class="badge bg-info">Shortlisted</span>
-                                                {% elif application.status == 'interview_scheduled' %}
-                                                    <span class="badge bg-warning">Interview Scheduled</span>
-                                                {% elif application.status == 'selected' %}
-                                                    <span class="badge bg-success">Selected</span>
-                                                {% elif application.status == 'rejected' %}
-                                                    <span class="badge bg-danger">Rejected</span>
-                                                {% else %}
-                                                    <span class="badge bg-secondary">{{ application.status }}</span>
-                                                {% endif %}
+                                                <span class="status-badge badge 
+                                                    {% if application.status == 'applied' %}bg-primary
+                                                    {% elif application.status == 'shortlisted' %}bg-info
+                                                    {% elif application.status == 'interview_scheduled' %}bg-warning
+                                                    {% elif application.status == 'selected' %}bg-success
+                                                    {% elif application.status == 'rejected' %}bg-danger
+                                                    {% else %}bg-secondary{% endif %}">
+                                                    {{ application.status.replace('_', ' ').title() }}
+                                                </span>
                                                 <br>
                                                 <small>Last updated: {{ application.updated_date.strftime('%d %b %Y, %H:%M') }}</small>
                                             </div>
@@ -151,8 +309,11 @@
         <div class="alert alert-info" role="alert">
             <i class="fas fa-info-circle me-2"></i>You haven't applied to any companies yet.
             <div class="mt-3">
-                <a href="{{ url_for('student_eligible_companies') }}" class="btn btn-primary">
+                <a href="{{ url_for('routes.student_eligible_companies') }}" class="btn btn-primary">
                     <i class="fas fa-building me-2"></i>Browse Eligible Companies
+                </a>
+                <a href="{{ url_for('routes.chatbot') }}" class="btn btn-outline-primary ms-2">
+                    <i class="fas fa-robot me-2"></i>Get AI Advice
                 </a>
             </div>
         </div>
@@ -191,4 +352,16 @@
         position: relative;
     }
 </style>
+
+<script>
+// Animate prediction bars on load
+document.addEventListener('DOMContentLoaded', function() {
+    const predictionFills = document.querySelectorAll('.prediction-fill');
+    predictionFills.forEach(fill => {
+        setTimeout(() => {
+            fill.style.width = fill.style.width;
+        }, 500);
+    });
+});
+</script>
 {% endblock %}

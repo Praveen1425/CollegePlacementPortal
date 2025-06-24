@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - College Placement Portal{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section text-center py-5 mb-5">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-4">
+            <i class="fas fa-university text-primary me-3"></i>
+            Welcome to College Placement Portal
+        </h1>
+        <p class="lead mb-4">
+            Connect students with top companies and build successful careers through our comprehensive placement platform.
+        </p>
+        {% if not current_user.is_authenticated %}
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('routes.login') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </a>
+                <a href="{{ url_for('routes.register') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-user-plus me-2"></i>Register
+                </a>
+            </div>
+        {% else %}
+            <a href="{{ url_for('routes.dashboard') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container mb-5">
+    <h2 class="text-center mb-5">Platform Features</h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-robot fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="card-title">AI-Powered Chatbot</h5>
+                    <p class="card-text">
+                        Get instant guidance on resume building, interview preparation, and career advice from our intelligent chatbot.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-chart-line fa-3x text-success"></i>
+                    </div>
+                    <h5 class="card-title">Selection Prediction</h5>
+                    <p class="card-text">
+                        Advanced AI algorithms predict your selection chances based on your profile and job requirements.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-file-alt fa-3x text-info"></i>
+                    </div>
+                    <h5 class="card-title">Resume Analysis</h5>
+                    <p class="card-text">
+                        Get detailed feedback on your resume with AI-powered analysis and improvement suggestions.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Types Section -->
+<div class="container mb-5">
+    <h2 class="text-center mb-5">For Different Users</h2>
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card h-100 border-primary">
+                <div class="card-header bg-primary text-white text-center">
+                    <i class="fas fa-user-graduate fa-2x mb-2"></i>
+                    <h4>Students</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Browse eligible companies</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Apply for positions</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Track application status</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Get AI-powered guidance</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Schedule mock interviews</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card h-100 border-success">
+                <div class="card-header bg-success text-white text-center">
+                    <i class="fas fa-building fa-2x mb-2"></i>
+                    <h4>Companies</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Post job openings</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Review applications</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Schedule interviews</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Provide feedback</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Track hiring process</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card h-100 border-info">
+                <div class="card-header bg-info text-white text-center">
+                    <i class="fas fa-users-cog fa-2x mb-2"></i>
+                    <h4>CDC Officers</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Manage companies</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Monitor applications</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Schedule mock interviews</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Generate reports</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Provide guidance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Section -->
+<div class="bg-light py-5 mb-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Platform Statistics</h2>
+        <div class="row text-center">
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                    <h3 class="fw-bold">500+</h3>
+                    <p>Students</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <i class="fas fa-building fa-3x text-success mb-3"></i>
+                    <h3 class="fw-bold">50+</h3>
+                    <p>Companies</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <i class="fas fa-briefcase fa-3x text-info mb-3"></i>
+                    <h3 class="fw-bold">200+</h3>
+                    <p>Job Postings</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <i class="fas fa-handshake fa-3x text-warning mb-3"></i>
+                    <h3 class="fw-bold">150+</h3>
+                    <p>Placements</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="container text-center">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h3 class="mb-4">Ready to Start Your Career Journey?</h3>
+            <p class="lead mb-4">
+                Join thousands of students who have successfully placed through our platform.
+            </p>
+            {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('routes.register') }}" class="btn btn-primary btn-lg me-3">
+                    <i class="fas fa-user-plus me-2"></i>Get Started
+                </a>
+                <a href="{{ url_for('routes.login') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </a>
+            {% else %}
+                <a href="{{ url_for('routes.dashboard') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head_content %}
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+}
+
+.feature-icon {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-item {
+    padding: 1rem;
+}
+
+.card {
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Company Comment - College Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('routes.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('routes.company_students') }}">Registered Students</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Company Comment</li>
+                </ol>
+            </nav>
+            <h2 class="mb-3">
+                <i class="fas fa-comment-dots me-2"></i>Company Comment/Review
+            </h2>
+            <p class="text-muted">
+                Student: {{ application.student.full_name }} | Job: {{ application.job_posting.title }}
+            </p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Add/Edit Comment</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            <label for="{{ form.company_comment.id }}" class="form-label">Comment/Review</label>
+                            {{ form.company_comment(class="form-control", rows=4) }}
+                            {% for error in form.company_comment.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

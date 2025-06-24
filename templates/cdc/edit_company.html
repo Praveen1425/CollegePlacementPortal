@@ -9,7 +9,7 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('cdc_companies') }}">Manage Companies</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('routes.cdc_companies') }}">Manage Companies</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Edit Job</li>
                 </ol>
             </nav>
@@ -25,7 +25,7 @@
                     <h5 class="mb-0">Job Details</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ url_for('cdc_edit_company', job_id=job.id) }}">
+                    <form method="POST" action="{{ url_for('routes.cdc_edit_company', job_id=job.id) }}">
                         {{ form.hidden_tag() }}
                         
                         <div class="mb-3">

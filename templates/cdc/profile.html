@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}CDC Profile - College Placement Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-users-cog me-2"></i>
+                    CDC Profile
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.full_name.id }}" class="form-label">Full Name</label>
+                            {{ form.full_name(class="form-control", placeholder="Enter your full name") }}
+                            {% for error in form.full_name.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ form.official_id.id }}" class="form-label">Official ID</label>
+                            {{ form.official_id(class="form-control", placeholder="Enter your CDC ID") }}
+                            {% for error in form.official_id.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.designation.id }}" class="form-label">Designation</label>
+                            {{ form.designation(class="form-control", placeholder="e.g., Placement Officer") }}
+                            {% for error in form.designation.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ form.contact_number.id }}" class="form-label">Contact Number</label>
+                            {{ form.contact_number(class="form-control", placeholder="Enter your contact number") }}
+                            {% for error in form.contact_number.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{{ url_for('routes.cdc_dashboard') }}" class="text-decoration-none">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

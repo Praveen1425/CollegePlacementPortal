@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Student Directory - College Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('routes.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Student Directory</li>
+                </ol>
+            </nav>
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0"><i class="fas fa-user-graduate me-2"></i>Student Directory</h2>
+                <a href="{{ url_for('routes.cdc_student_analytics') }}" class="btn btn-info">
+                    <i class="fas fa-chart-bar me-2"></i>View Analytics
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search and Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-search me-2"></i>Search & Filter Students</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('routes.cdc_students') }}">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="search" class="form-label">Search</label>
+                                <input type="text" class="form-control" id="search" name="search" 
+                                       value="{{ search }}" placeholder="Name, Roll Number, or Skills">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="branch" class="form-label">Branch</label>
+                                <select class="form-select" id="branch" name="branch">
+                                    <option value="">All Branches</option>
+                                    {% for branch in branch_options %}
+                                        <option value="{{ branch }}" {% if branch == branch_filter %}selected{% endif %}>
+                                            {{ branch }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label for="cgpa_min" class="form-label">CGPA Min</label>
+                                <input type="number" class="form-control" id="cgpa_min" name="cgpa_min" 
+                                       value="{{ cgpa_min }}" step="0.01" min="0" max="10">
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label for="cgpa_max" class="form-label">CGPA Max</label>
+                                <input type="number" class="form-control" id="cgpa_max" name="cgpa_max" 
+                                       value="{{ cgpa_max }}" step="0.01" min="0" max="10">
+                            </div>
+                            <div class="col-md-2 mb-3 d-flex align-items-end">
+                                <div class="d-grid gap-2 w-100">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search me-1"></i>Search
+                                    </button>
+                                    <a href="{{ url_for('routes.cdc_students') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i>Clear
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Students List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Students ({{ students|length }} found)
+                    </h5>
+                </div>
+                
+                {% if students %}
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Student Name</th>
+                                        <th>Roll Number</th>
+                                        <th>Branch</th>
+                                        <th>CGPA</th>
+                                        <th>Skills</th>
+                                        <th>Applications</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in students %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-user-circle fa-2x text-primary me-3"></i>
+                                                    <div>
+                                                        <strong>{{ student.full_name }}</strong>
+                                                        <br>
+                                                        <small class="text-muted">{{ student.user.email }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ student.roll_number }}</td>
+                                            <td>
+                                                <span class="badge bg-info">{{ student.branch }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if student.cgpa >= 8.0 %}bg-success{% elif student.cgpa >= 7.0 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                    {{ "%.2f"|format(student.cgpa) }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if student.skills %}
+                                                    <small>{{ student.skills[:50] }}{% if student.skills|length > 50 %}...{% endif %}</small>
+                                                {% else %}
+                                                    <span class="text-muted">Not specified</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% set student_apps = student.applications %}
+                                                <span class="badge bg-secondary">{{ student_apps|length }}</span>
+                                            </td>
+                                            <td>
+                                                {% if student_apps %}
+                                                    {% set selected = student_apps|selectattr('status', 'equalto', 'selected')|list %}
+                                                    {% if selected %}
+                                                        <span class="badge bg-success">Selected</span>
+                                                    {% else %}
+                                                        {% set shortlisted = student_apps|selectattr('status', 'equalto', 'shortlisted')|list %}
+                                                        {% if shortlisted %}
+                                                            <span class="badge bg-warning">Shortlisted</span>
+                                                        {% else %}
+                                                            <span class="badge bg-info">Applied</span>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="badge bg-light text-dark">No Applications</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ url_for('routes.cdc_student_details', student_id=student.id) }}" 
+                                                       class="btn btn-primary" title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-info" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#studentModal{{ student.id }}"
+                                                            title="Quick View">
+                                                        <i class="fas fa-info-circle"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Student Quick View Modal -->
+                                        <div class="modal fade" id="studentModal{{ student.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-primary text-white">
+                                                        <h5 class="modal-title">
+                                                            <i class="fas fa-user-graduate me-2"></i>{{ student.full_name }}
+                                                        </h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <h6>Basic Information</h6>
+                                                                <p><strong>Roll Number:</strong> {{ student.roll_number }}</p>
+                                                                <p><strong>Branch:</strong> {{ student.branch }}</p>
+                                                                <p><strong>CGPA:</strong> {{ "%.2f"|format(student.cgpa) }}</p>
+                                                                <p><strong>Email:</strong> {{ student.user.email }}</p>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <h6>Skills</h6>
+                                                                <p>{{ student.skills or 'Not specified' }}</p>
+                                                                
+                                                                <h6>Application Summary</h6>
+                                                                <p><strong>Total Applications:</strong> {{ student_apps|length }}</p>
+                                                                {% if student_apps %}
+                                                                    {% set selected = student_apps|selectattr('status', 'equalto', 'selected')|list %}
+                                                                    <p><strong>Selected:</strong> {{ selected|length }}</p>
+                                                                    {% set shortlisted = student_apps|selectattr('status', 'equalto', 'shortlisted')|list %}
+                                                                    <p><strong>Shortlisted:</strong> {{ shortlisted|length }}</p>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <a href="{{ url_for('routes.cdc_student_details', student_id=student.id) }}" 
+                                                           class="btn btn-primary">
+                                                            <i class="fas fa-eye me-1"></i>View Full Details
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="card-body">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>No students found matching your criteria.
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

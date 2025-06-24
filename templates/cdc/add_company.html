@@ -8,8 +8,8 @@
         <div class="col-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('cdc_companies') }}">Manage Companies</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('routes.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('routes.cdc_companies') }}">Manage Companies</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Add Job</li>
                 </ol>
             </nav>
@@ -24,7 +24,7 @@
                     <h5 class="mb-0">Job Details</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ url_for('cdc_add_company') }}">
+                    <form method="POST" action="{{ url_for('routes.cdc_add_company') }}">
                         {{ form.hidden_tag() }}
                         
                         <div class="mb-3">

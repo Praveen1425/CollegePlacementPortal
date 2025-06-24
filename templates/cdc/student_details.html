@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+
+{% block title %}{{ student.full_name }} - Student Details{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('routes.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('routes.cdc_students') }}">Student Directory</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ student.full_name }}</li>
+                </ol>
+            </nav>
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">
+                    <i class="fas fa-user-graduate me-2"></i>{{ student.full_name }}
+                </h2>
+                <a href="{{ url_for('routes.cdc_students') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Directory
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Student Overview -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Student Profile</h5>
+                </div>
+                <div class="card-body text-center">
+                    <i class="fas fa-user-circle fa-5x text-primary mb-3"></i>
+                    <h4>{{ student.full_name }}</h4>
+                    <p class="text-muted">{{ student.roll_number }}</p>
+                    
+                    <div class="row text-start">
+                        <div class="col-12">
+                            <p><strong>Branch:</strong> {{ student.branch }}</p>
+                            <p><strong>CGPA:</strong> 
+                                <span class="badge {% if student.cgpa >= 8.0 %}bg-success{% elif student.cgpa >= 7.0 %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ "%.2f"|format(student.cgpa) }}
+                                </span>
+                            </p>
+                            <p><strong>Email:</strong> {{ student.user.email }}</p>
+                            <p><strong>Skills:</strong> {{ student.skills or 'Not specified' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-primary text-white text-center">
+                        <div class="card-body py-3">
+                            <h3 class="mb-2">{{ total_applications }}</h3>
+                            <p class="mb-0">Total Applications</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-success text-white text-center">
+                        <div class="card-body py-3">
+                            <h3 class="mb-2">{{ selected_count }}</h3>
+                            <p class="mb-0">Selected</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-warning text-dark text-center">
+                        <div class="card-body py-3">
+                            <h3 class="mb-2">{{ shortlisted_count }}</h3>
+                            <p class="mb-0">Shortlisted</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-danger text-white text-center">
+                        <div class="card-body py-3">
+                            <h3 class="mb-2">{{ rejected_count }}</h3>
+                            <p class="mb-0">Rejected</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Performance Chart -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Application Performance</h5>
+                </div>
+                <div class="card-body">
+                    {% if total_applications > 0 %}
+                        <div class="progress mb-3" style="height: 25px;">
+                            {% set selected_percent = (selected_count / total_applications * 100) %}
+                            {% set shortlisted_percent = (shortlisted_count / total_applications * 100) %}
+                            {% set rejected_percent = (rejected_count / total_applications * 100) %}
+                            
+                            <div class="progress-bar bg-success" style="width: {{ selected_percent }}%">
+                                Selected ({{ "%.1f"|format(selected_percent) }}%)
+                            </div>
+                            <div class="progress-bar bg-warning" style="width: {{ shortlisted_percent }}%">
+                                Shortlisted ({{ "%.1f"|format(shortlisted_percent) }}%)
+                            </div>
+                            <div class="progress-bar bg-danger" style="width: {{ rejected_percent }}%">
+                                Rejected ({{ "%.1f"|format(rejected_percent) }}%)
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No applications yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Applications and Interviews Tabs -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" id="studentTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="applications-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#applications" type="button" role="tab">
+                                <i class="fas fa-file-alt me-2"></i>Applications ({{ applications|length }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="interviews-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#interviews" type="button" role="tab">
+                                <i class="fas fa-calendar-alt me-2"></i>Mock Interviews ({{ mock_interviews|length }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="resume-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#resume" type="button" role="tab">
+                                <i class="fas fa-file-pdf me-2"></i>Resume Analysis ({{ resume_analyses|length }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="predictions-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#predictions" type="button" role="tab">
+                                <i class="fas fa-chart-line me-2"></i>AI Predictions ({{ selection_predictions|length }})
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="studentTabsContent">
+                        <!-- Applications Tab -->
+                        <div class="tab-pane fade show active" id="applications" role="tabpanel">
+                            {% if applications %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Company</th>
+                                                <th>Job Title</th>
+                                                <th>Applied Date</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for application in applications %}
+                                                <tr>
+                                                    <td>{{ application.job_posting.company.company_name }}</td>
+                                                    <td>{{ application.job_posting.title }}</td>
+                                                    <td>{{ application.applied_date.strftime('%d %b %Y') }}</td>
+                                                    <td>
+                                                        <span class="badge {% if application.status == 'selected' %}bg-success{% elif application.status == 'shortlisted' %}bg-warning{% elif application.status == 'rejected' %}bg-danger{% else %}bg-info{% endif %}">
+                                                            {{ application.status|title }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-sm btn-info" 
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#applicationModal{{ application.id }}">
+                                                            <i class="fas fa-eye"></i> View
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>No applications found for this student.
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Mock Interviews Tab -->
+                        <div class="tab-pane fade" id="interviews" role="tabpanel">
+                            {% if mock_interviews %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Interviewer</th>
+                                                <th>Topic</th>
+                                                <th>Scheduled Date</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for interview in mock_interviews %}
+                                                <tr>
+                                                    <td>{{ interview.interviewer }}</td>
+                                                    <td>{{ interview.topic }}</td>
+                                                    <td>{{ interview.scheduled_date.strftime('%d %b %Y %H:%M') }}</td>
+                                                    <td>
+                                                        <span class="badge {% if interview.status == 'completed' %}bg-success{% elif interview.status == 'scheduled' %}bg-warning{% else %}bg-info{% endif %}">
+                                                            {{ interview.status|title }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        {% if interview.feedback %}
+                                                            <button type="button" class="btn btn-sm btn-success" 
+                                                                    data-bs-toggle="modal" 
+                                                                    data-bs-target="#feedbackModal{{ interview.id }}">
+                                                                <i class="fas fa-comment"></i> Feedback
+                                                            </button>
+                                                        {% else %}
+                                                            <span class="text-muted">No feedback</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>No mock interviews scheduled for this student.
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Resume Analysis Tab -->
+                        <div class="tab-pane fade" id="resume" role="tabpanel">
+                            {% if resume_analyses %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Job Title</th>
+                                                <th>Company</th>
+                                                <th>Similarity Score</th>
+                                                <th>Extracted Skills</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for analysis in resume_analyses %}
+                                                <tr>
+                                                    <td>{{ analysis.job_posting.title }}</td>
+                                                    <td>{{ analysis.job_posting.company.company_name }}</td>
+                                                    <td>
+                                                        <span class="badge {% if analysis.similarity_score >= 0.7 %}bg-success{% elif analysis.similarity_score >= 0.5 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                            {{ "%.2f"|format(analysis.similarity_score) }}
+                                                        </span>
+                                                    </td>
+                                                    <td>{{ analysis.extracted_skills[:50] }}{% if analysis.extracted_skills|length > 50 %}...{% endif %}</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-sm btn-info" 
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#resumeModal{{ analysis.id }}">
+                                                            <i class="fas fa-eye"></i> View
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>No resume analysis data available for this student.
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- AI Predictions Tab -->
+                        <div class="tab-pane fade" id="predictions" role="tabpanel">
+                            {% if selection_predictions %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Job Title</th>
+                                                <th>Company</th>
+                                                <th>Prediction Score</th>
+                                                <th>Confidence</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for prediction in selection_predictions %}
+                                                <tr>
+                                                    <td>{{ prediction.application.job_posting.title }}</td>
+                                                    <td>{{ prediction.application.job_posting.company.company_name }}</td>
+                                                    <td>
+                                                        <span class="badge {% if prediction.prediction_score >= 70 %}bg-success{% elif prediction.prediction_score >= 50 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                            {{ "%.1f"|format(prediction.prediction_score) }}%
+                                                        </span>
+                                                    </td>
+                                                    <td>{{ "%.1f"|format(prediction.confidence_level * 100) }}%</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-sm btn-info" 
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#predictionModal{{ prediction.id }}">
+                                                            <i class="fas fa-eye"></i> View
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>No AI predictions available for this student.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals for detailed views -->
+{% for application in applications %}
+    <div class="modal fade" id="applicationModal{{ application.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Application Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>Job Information</h6>
+                    <p><strong>Company:</strong> {{ application.job_posting.company.company_name }}</p>
+                    <p><strong>Job Title:</strong> {{ application.job_posting.title }}</p>
+                    <p><strong>Applied Date:</strong> {{ application.applied_date.strftime('%d %b %Y %H:%M') }}</p>
+                    <p><strong>Status:</strong> 
+                        <span class="badge {% if application.status == 'selected' %}bg-success{% elif application.status == 'shortlisted' %}bg-warning{% elif application.status == 'rejected' %}bg-danger{% else %}bg-info{% endif %}">
+                            {{ application.status|title }}
+                        </span>
+                    </p>
+                    {% if application.resume_file %}
+                        <p><strong>Resume:</strong> {{ application.resume_file }}</p>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+{% for interview in mock_interviews %}
+    {% if interview.feedback %}
+        <div class="modal fade" id="feedbackModal{{ interview.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">Mock Interview Feedback</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Interviewer:</strong> {{ interview.interviewer }}</p>
+                        <p><strong>Topic:</strong> {{ interview.topic }}</p>
+                        <p><strong>Date:</strong> {{ interview.scheduled_date.strftime('%d %b %Y %H:%M') }}</p>
+                        <hr>
+                        <h6>Feedback:</h6>
+                        <p>{{ interview.feedback }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}
+
+{% for analysis in resume_analyses %}
+    <div class="modal fade" id="resumeModal{{ analysis.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">Resume Analysis</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>Analysis Results</h6>
+                    <p><strong>Job:</strong> {{ analysis.job_posting.title }} at {{ analysis.job_posting.company.company_name }}</p>
+                    <p><strong>Similarity Score:</strong> {{ "%.2f"|format(analysis.similarity_score) }}</p>
+                    <hr>
+                    <h6>Extracted Skills:</h6>
+                    <p>{{ analysis.extracted_skills }}</p>
+                    <hr>
+                    <h6>AI Feedback:</h6>
+                    <p>{{ analysis.ai_feedback }}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+{% for prediction in selection_predictions %}
+    <div class="modal fade" id="predictionModal{{ prediction.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">AI Selection Prediction</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>Prediction Details</h6>
+                    <p><strong>Job:</strong> {{ prediction.application.job_posting.title }} at {{ prediction.application.job_posting.company.company_name }}</p>
+                    <p><strong>Prediction Score:</strong> {{ "%.1f"|format(prediction.prediction_score) }}%</p>
+                    <p><strong>Confidence Level:</strong> {{ "%.1f"|format(prediction.confidence_level * 100) }}%</p>
+                    <hr>
+                    <h6>AI Reasoning:</h6>
+                    <p>{{ prediction.reasoning }}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+{% endblock %} 

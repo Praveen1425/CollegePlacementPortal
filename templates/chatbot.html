@@ -1,211 +1,209 @@
 {% extends "base.html" %}
 
-{% block title %}Placement Assistant - College Placement Portal{% endblock %}
+{% block title %}AI Placement Assistant{% endblock %}
 
 {% block head_content %}
 <style>
-    .chat-container {
-        height: 500px;
-        overflow-y: auto;
-        padding: 1rem;
-        background-color: rgba(33, 37, 41, 0.7);
-        border-radius: 0.25rem;
+    /* Ensure the main container and body take full height */
+    html, body {
+        height: 100%;
+        background-color: #343a40; /* Dark background for the page */
     }
-    
-    .message {
-        margin-bottom: 15px;
+    main.container {
+        height: calc(100% - 120px); /* Adjust based on nav/footer height */
         display: flex;
-    }
-    
-    .message-content {
-        padding: 10px 15px;
-        border-radius: 15px;
-        max-width: 80%;
-    }
-    
-    .user-message {
-        justify-content: flex-end;
-    }
-    
-    .user-message .message-content {
-        background-color: #0d6efd;
-        color: white;
-        border-bottom-right-radius: 0;
-    }
-    
-    .bot-message {
-        justify-content: flex-start;
-    }
-    
-    .bot-message .message-content {
-        background-color: #2a2d31;
-        color: white;
-        border-bottom-left-radius: 0;
-    }
-    
-    .message-time {
-        font-size: 0.75rem;
-        margin-top: 5px;
-        text-align: right;
-        color: rgba(255, 255, 255, 0.7);
-    }
-    
-    .bot-indicator {
-        display: flex;
-        align-items: center;
-        margin-bottom: 5px;
-    }
-    
-    .bot-indicator i {
-        margin-right: 5px;
-        color: #0dcaf0;
-    }
-    
-    .bot-name {
-        font-weight: bold;
-        color: #0dcaf0;
+        flex-direction: column;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Placement Assistant</li>
-                </ol>
-            </nav>
-            <h2 class="mb-3"><i class="fas fa-robot me-2"></i>Placement Assistant</h2>
+<div class="chat-ui-container">
+    <div class="chat-messages" id="chatMessages">
+        <!-- Welcome Message -->
+        <div class="welcome-message">
+            <h2>What's on the agenda today?</h2>
+            <p>I'm your comprehensive AI assistant! I can help you with:</p>
+            <ul>
+                <li><b>💻 Coding & Programming:</b> Debug errors, explain concepts, help with algorithms</li>
+                <li><b>🔧 Engineering Support:</b> Math problems, physics, circuits, mechanical design</li>
+                <li><b>📄 Resume Analysis:</b> Review, improve, and optimize your resume</li>
+                <li><b>🎯 Interview Prep:</b> Practice questions, tips, and strategies</li>
+                <li><b>📚 Academic Help:</b> Homework, projects, research assistance</li>
+                <li><b>🧠 Problem Solving:</b> Logic, reasoning, and analytical thinking</li>
+                </ul>
+            <p><i>Just ask me anything! I'll explain everything in simple terms that anyone can understand.</i></p>
         </div>
+        <!-- Messages will be injected here by JavaScript -->
     </div>
     
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Chat with Placement Assistant</h5>
-                        <form action="{{ url_for('chatbot_clear') }}" method="POST">
-                            <button type="submit" class="btn btn-sm btn-light">
-                                <i class="fas fa-trash-alt me-1"></i>Clear Chat
-                            </button>
-                        </form>
-                    </div>
-                </div>
-                <div class="card-body p-0">
-                    <!-- Chat Messages Container -->
-                    <div class="chat-container" id="chatContainer">
-                        <!-- Welcome Message -->
-                        {% if not chat_history %}
-                            <div class="message bot-message">
-                                <div class="message-content">
-                                    <div class="bot-indicator">
-                                        <i class="fas fa-robot"></i>
-                                        <span class="bot-name">Placement Assistant</span>
-                                    </div>
-                                    <p>
-                                        Hello! I'm your placement assistant. I can help with interview preparation, resume tips, and other placement-related queries. What would you like to know?
-                                    </p>
-                                    <div class="message-time">
-                                        Just now
-                                    </div>
-                                </div>
-                            </div>
-                        {% endif %}
-                        
-                        <!-- Chat History -->
-                        {% for message in chat_history %}
-                            <!-- User Message -->
-                            <div class="message user-message">
-                                <div class="message-content">
-                                    <p>{{ message.user }}</p>
-                                    <div class="message-time">You</div>
-                                </div>
-                            </div>
-                            
-                            <!-- Bot Response -->
-                            <div class="message bot-message">
-                                <div class="message-content">
-                                    <div class="bot-indicator">
-                                        <i class="fas fa-robot"></i>
-                                        <span class="bot-name">Placement Assistant</span>
-                                    </div>
-                                    <p>{{ message.bot }}</p>
-                                    <div class="message-time">
-                                        Just now
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                    
-                    <!-- Chat Input Form -->
-                    <div class="card-footer bg-light">
-                        <form method="POST" action="{{ url_for('chatbot') }}" id="chatForm" class="d-flex">
-                            {{ form.hidden_tag() }}
-                            {{ form.message(class="form-control me-2", placeholder="Type your question here...", autocomplete="off") }}
-                            {{ form.submit(class="btn btn-primary") }}
-                        </form>
-                    </div>
-                </div>
-            </div>
+    <div class="chat-input-area">
+        <div class="chat-input-wrapper">
+            <form id="chatForm">
+                <input type="text" class="form-control" placeholder="Ask anything..." id="messageInput" autocomplete="off">
+                <button type="submit" class="btn" id="sendButton">
+                    <i class="fas fa-paper-plane"></i>
+            </button>
+        </form>
         </div>
-        
-        <div class="col-md-4">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Suggested Questions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="list-group">
-                        <button type="button" class="list-group-item list-group-item-action suggested-question">
-                            How do I prepare for a technical interview?
-                        </button>
-                        <button type="button" class="list-group-item list-group-item-action suggested-question">
-                            What should I include in my resume?
-                        </button>
-                        <button type="button" class="list-group-item list-group-item-action suggested-question">
-                            How to prepare for aptitude tests?
-                        </button>
-                        <button type="button" class="list-group-item list-group-item-action suggested-question">
-                            What is the typical placement process?
-                        </button>
-                        <button type="button" class="list-group-item list-group-item-action suggested-question">
-                            Tips for group discussion rounds?
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card shadow-sm">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>About the Assistant</h5>
-                </div>
-                <div class="card-body">
-                    <p>
-                        The Placement Assistant is designed to help you with your placement preparation journey. It can provide guidance on:
-                    </p>
-                    <ul>
-                        <li>Resume building and optimization</li>
-                        <li>Technical and HR interview preparation</li>
-                        <li>Aptitude test strategies</li>
-                        <li>Group discussion tips</li>
-                        <li>Common interview questions and answers</li>
-                        <li>General placement process information</li>
-                    </ul>
-                    <p class="mb-0">
-                        <small>Note: This is a rule-based assistant trained on common placement scenarios. For specific company information, please check with the CDC.</small>
-                    </p>
-                </div>
-            </div>
-        </div>
+        <p class="text-muted text-center mt-2" style="font-size: 0.75rem;">
+            AI Placement Assistant can provide guidance and answer questions about your career journey.
+        </p>
     </div>
+</div>
+
+<div class="typing-indicator" id="typingIndicator">
+    <i class="fas fa-circle-notch fa-spin me-2"></i>AI is thinking...
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+<script>
+let sessionId = '{{ session_id }}';
+
+function sendQuickMessage(message) {
+    document.getElementById('messageInput').value = message;
+    sendMessage();
+}
+
+// Function to clear chat history (optional, can be triggered by a button if needed)
+function clearChat() {
+    if (confirm('Are you sure you want to clear the chat history?')) {
+        fetch('/chatbot/clear', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_id: sessionId })
+        }).then(() => {
+            window.location.reload();
+        });
+    }
+}
+
+// Auto-scroll to bottom of chat
+function scrollToBottom() {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Show/Hide Welcome Message
+function updateWelcomeMessageVisibility() {
+    const chatMessages = document.getElementById('chatMessages');
+    const welcomeMessage = document.querySelector('.welcome-message');
+    if (chatMessages.children.length > 1) { // If more than just the welcome message exists
+        welcomeMessage.style.display = 'none';
+    } else {
+        welcomeMessage.style.display = 'flex';
+    }
+}
+
+// Show typing indicator
+function showTypingIndicator() {
+    const indicator = document.getElementById('typingIndicator');
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.appendChild(indicator);
+    indicator.style.display = 'block';
+    scrollToBottom();
+}
+
+// Hide typing indicator
+function hideTypingIndicator() {
+    const indicator = document.getElementById('typingIndicator');
+    indicator.style.display = 'none';
+}
+
+// Send message function
+function sendMessage() {
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    const message = messageInput.value.trim();
+    
+    if (!message) return;
+    
+    // Immediately hide welcome message and add user message
+    updateWelcomeMessageVisibility();
+    addMessage(message, 'user');
+    messageInput.value = '';
+    
+    // Disable form and show typing indicator
+    messageInput.disabled = true;
+    sendButton.disabled = true;
+    showTypingIndicator();
+    
+    fetch('/chatbot/api', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: message })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideTypingIndicator();
+        addMessage(data.response, 'bot');
+        
+        // Re-enable form
+        messageInput.disabled = false;
+        sendButton.disabled = false;
+        messageInput.focus();
+    })
+    .catch(error => {
+        hideTypingIndicator();
+        addMessage('Sorry, an error occurred. Please try again.', 'bot');
+        console.error('Error:', error);
+        
+        // Re-enable form
+        messageInput.disabled = false;
+        sendButton.disabled = false;
+        messageInput.focus();
+    });
+}
+
+// Add a new message to the chat window
+function addMessage(content, sender) {
+    const chatMessages = document.getElementById('chatMessages');
+    const messageWrapper = document.createElement('div');
+    messageWrapper.className = `message-wrapper ${sender}-wrapper`;
+    
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // Sanitize and format content
+    const formattedContent = content.replace(/\\n/g, '<br>');
+
+    const messageText = document.createElement('div');
+    messageText.className = 'message-text';
+    messageText.innerHTML = formattedContent; // Directly set innerHTML
+
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+    messageContent.appendChild(messageText);
+
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'message-time';
+    timeDiv.textContent = time;
+
+    messageContent.appendChild(timeDiv);
+    messageWrapper.appendChild(messageContent);
+
+    chatMessages.appendChild(messageWrapper);
+    scrollToBottom();
+    updateWelcomeMessageVisibility();
+}
+
+// Event Listeners
+document.getElementById('chatForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    sendMessage();
+});
+
+document.getElementById('messageInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+// Initial setup on page load
+window.addEventListener('load', () => {
+    scrollToBottom();
+    updateWelcomeMessageVisibility();
+});
+</script>
 {% endblock %}

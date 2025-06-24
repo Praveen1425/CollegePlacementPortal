@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - College Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <i class="fas fa-user-graduate me-2"></i>Student Dashboard
+                    </h2>
+                    <p class="text-muted">Welcome, {{ current_user.username }}!</p>
+                    {% if current_user.student_profile %}
+                        <p class="text-muted">
+                            <i class="fas fa-user me-1"></i>
+                            {{ current_user.student_profile.full_name or "Complete your profile" }} | 
+                            <i class="fas fa-graduation-cap me-1"></i>
+                            {{ current_user.student_profile.branch or "Branch not set" }} | 
+                            <i class="fas fa-star me-1"></i>
+                            CGPA: {{ current_user.student_profile.cgpa or "Not set" }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards Row -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white mb-3 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-briefcase fa-3x"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0">Eligible Companies</h5>
+                            <h2 class="mt-2 mb-0">{{ eligible_jobs_count|default(0) }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <a href="{{ url_for('routes.eligible_companies') }}" class="text-white text-decoration-none small">
+                        View Eligible Companies <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card bg-success text-white mb-3 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-file-alt fa-3x"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0">Applied Jobs</h5>
+                            <h2 class="mt-2 mb-0">{{ applied_jobs|default(0) }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <a href="{{ url_for('routes.student_applications') }}" class="text-white text-decoration-none small">
+                        View Applications <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card bg-info text-white mb-3 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-comments fa-3x"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0">Mock Interviews</h5>
+                            <h2 class="mt-2 mb-0">{{ mock_interviews|default(0) }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <a href="{{ url_for('routes.student_feedback') }}" class="text-white text-decoration-none small">
+                        View Feedback <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('routes.student_profile') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-user-edit me-2"></i>Update Profile
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('routes.eligible_companies') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-search me-2"></i>Find Jobs
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('routes.chatbot') }}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-robot me-2"></i>AI Chatbot
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('routes.student_applications') }}" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-list me-2"></i>My Applications
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('routes.schedule_mock_interview') }}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-calendar-check me-2"></i>Schedule Mock Interview
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('routes.resume_review') }}" class="btn btn-outline-danger w-100">
+                                <i class="fas fa-file-alt me-2"></i>Resume Review
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Applications -->
+    {% if recent_applications %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Applications</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Company</th>
+                                    <th>Position</th>
+                                    <th>Applied Date</th>
+                                    <th>Status</th>
+                                    <th>Selection Chance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in recent_applications %}
+                                <tr>
+                                    <td>{{ application.job.company.company_name }}</td>
+                                    <td>{{ application.job.title }}</td>
+                                    <td>{{ application.applied_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        {% set status_info = format_status(application.status) %}
+                                        <span class="badge {{ status_info[1] }}">{{ status_info[0] }}</span>
+                                    </td>
+                                    <td>
+                                        {% if application.selection_prediction %}
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar bg-success" role="progressbar" 
+                                                     style="width: {{ application.selection_prediction }}%"
+                                                     aria-valuenow="{{ application.selection_prediction }}" 
+                                                     aria-valuemin="0" aria-valuemax="100">
+                                                    {{ application.selection_prediction }}%
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">Not available</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Profile Completion Alert -->
+    {% if current_user.student_profile and not current_user.student_profile.full_name %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Complete Your Profile!</strong> Please update your profile with your full name, branch, and CGPA to get better job recommendations.
+                <a href="{{ url_for('routes.student_profile') }}" class="alert-link">Update Profile</a>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

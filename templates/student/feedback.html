@@ -8,7 +8,7 @@
         <div class="col-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('routes.dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item active" aria-current="page">My Feedback</li>
                 </ol>
             </nav>
@@ -81,7 +81,7 @@
                                                                         <h6>Feedback</h6>
                                                                         <div class="card bg-light">
                                                                             <div class="card-body">
-                                                                                {{ mock.feedback|nl2br }}
+                                                                                {{ mock.feedback|replace('\n', '<br>')|safe }}
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -163,7 +163,7 @@
                                         <h6>Feedback</h6>
                                         <div class="card bg-light">
                                             <div class="card-body">
-                                                {{ feedback.feedback|nl2br }}
+                                                {{ feedback.feedback|replace('\n', '<br>')|safe }}
                                             </div>
                                         </div>
                                     </div>

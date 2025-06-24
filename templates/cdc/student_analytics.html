@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+
+{% block title %}Student Analytics - College Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('routes.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Student Analytics</li>
+                </ol>
+            </nav>
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Student Analytics</h2>
+                <a href="{{ url_for('routes.cdc_students') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-users me-2"></i>View Student Directory
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Overview Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white text-center">
+                <div class="card-body py-4">
+                    <i class="fas fa-user-graduate fa-3x mb-3"></i>
+                    <h3 class="mb-2">{{ total_students }}</h3>
+                    <p class="mb-0">Total Students</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white text-center">
+                <div class="card-body py-4">
+                    <i class="fas fa-file-alt fa-3x mb-3"></i>
+                    <h3 class="mb-2">{{ application_stats.total }}</h3>
+                    <p class="mb-0">Total Applications</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-dark text-center">
+                <div class="card-body py-4">
+                    <i class="fas fa-check-circle fa-3x mb-3"></i>
+                    <h3 class="mb-2">{{ application_stats.selected }}</h3>
+                    <p class="mb-0">Selected Students</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white text-center">
+                <div class="card-body py-4">
+                    <i class="fas fa-percentage fa-3x mb-3"></i>
+                    <h3 class="mb-2">
+                        {% if application_stats.total > 0 %}
+                            {{ "%.1f"|format(application_stats.selected / application_stats.total * 100) }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </h3>
+                    <p class="mb-0">Selection Rate</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts and Analytics -->
+    <div class="row">
+        <!-- Branch Distribution -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Students by Branch</h5>
+                </div>
+                <div class="card-body">
+                    {% if branch_stats %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Branch</th>
+                                        <th>Count</th>
+                                        <th>Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for branch, count in branch_stats.items() %}
+                                        <tr>
+                                            <td>{{ branch }}</td>
+                                            <td>{{ count }}</td>
+                                            <td>{{ "%.1f"|format(count / total_students * 100) }}%</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No branch data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- CGPA Distribution -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>CGPA Distribution</h5>
+                </div>
+                <div class="card-body">
+                    {% if cgpa_ranges %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>CGPA Range</th>
+                                        <th>Count</th>
+                                        <th>Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for range_name, count in cgpa_ranges.items() %}
+                                        <tr>
+                                            <td>{{ range_name }}</td>
+                                            <td>{{ count }}</td>
+                                            <td>{{ "%.1f"|format(count / total_students * 100) }}%</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No CGPA data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Application Status Distribution -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-doughnut me-2"></i>Application Status Distribution</h5>
+                </div>
+                <div class="card-body">
+                    {% if application_stats.total > 0 %}
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="progress mb-3" style="height: 30px;">
+                                    {% set applied_percent = (application_stats.applied / application_stats.total * 100) %}
+                                    {% set shortlisted_percent = (application_stats.shortlisted / application_stats.total * 100) %}
+                                    {% set selected_percent = (application_stats.selected / application_stats.total * 100) %}
+                                    {% set rejected_percent = (application_stats.rejected / application_stats.total * 100) %}
+                                    
+                                    <div class="progress-bar bg-info" style="width: {{ applied_percent }}%">
+                                        Applied ({{ "%.1f"|format(applied_percent) }}%)
+                                    </div>
+                                    <div class="progress-bar bg-warning" style="width: {{ shortlisted_percent }}%">
+                                        Shortlisted ({{ "%.1f"|format(shortlisted_percent) }}%)
+                                    </div>
+                                    <div class="progress-bar bg-success" style="width: {{ selected_percent }}%">
+                                        Selected ({{ "%.1f"|format(selected_percent) }}%)
+                                    </div>
+                                    <div class="progress-bar bg-danger" style="width: {{ rejected_percent }}%">
+                                        Rejected ({{ "%.1f"|format(rejected_percent) }}%)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="row text-center">
+                                    <div class="col-6 mb-2">
+                                        <div class="card bg-info text-white">
+                                            <div class="card-body py-2">
+                                                <h6 class="mb-1">{{ application_stats.applied }}</h6>
+                                                <small>Applied</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 mb-2">
+                                        <div class="card bg-warning text-dark">
+                                            <div class="card-body py-2">
+                                                <h6 class="mb-1">{{ application_stats.shortlisted }}</h6>
+                                                <small>Shortlisted</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 mb-2">
+                                        <div class="card bg-success text-white">
+                                            <div class="card-body py-2">
+                                                <h6 class="mb-1">{{ application_stats.selected }}</h6>
+                                                <small>Selected</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 mb-2">
+                                        <div class="card bg-danger text-white">
+                                            <div class="card-body py-2">
+                                                <h6 class="mb-1">{{ application_stats.rejected }}</h6>
+                                                <small>Rejected</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No application data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top Performing Students -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top Performing Students</h5>
+                </div>
+                <div class="card-body">
+                    {% if top_performers %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Student Name</th>
+                                        <th>Roll Number</th>
+                                        <th>Branch</th>
+                                        <th>CGPA</th>
+                                        <th>Applications</th>
+                                        <th>Selected</th>
+                                        <th>Selection Rate</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for performer in top_performers %}
+                                        <tr>
+                                            <td>
+                                                {% if loop.index == 1 %}
+                                                    <i class="fas fa-medal text-warning"></i> 1st
+                                                {% elif loop.index == 2 %}
+                                                    <i class="fas fa-medal text-secondary"></i> 2nd
+                                                {% elif loop.index == 3 %}
+                                                    <i class="fas fa-medal text-bronze"></i> 3rd
+                                                {% else %}
+                                                    {{ loop.index }}
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-user-circle fa-2x text-primary me-2"></i>
+                                                    <div>
+                                                        <strong>{{ performer.student.full_name }}</strong>
+                                                        <br>
+                                                        <small class="text-muted">{{ performer.student.user.email }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ performer.student.roll_number }}</td>
+                                            <td>
+                                                <span class="badge bg-info">{{ performer.student.branch }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if performer.student.cgpa >= 8.0 %}bg-success{% elif performer.student.cgpa >= 7.0 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                    {{ "%.2f"|format(performer.student.cgpa) }}
+                                                </span>
+                                            </td>
+                                            <td>{{ performer.total_applications }}</td>
+                                            <td>{{ performer.selected_count }}</td>
+                                            <td>
+                                                <span class="badge {% if performer.selection_rate >= 70 %}bg-success{% elif performer.selection_rate >= 50 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                    {{ "%.1f"|format(performer.selection_rate) }}%
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('routes.cdc_student_details', student_id=performer.student.id) }}" 
+                                                   class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>No performance data available yet.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('routes.cdc_students') }}" class="btn btn-outline-primary d-block py-3">
+                                <i class="fas fa-users me-2"></i>Browse All Students
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('routes.cdc_student_applications') }}" class="btn btn-outline-success d-block py-3">
+                                <i class="fas fa-file-alt me-2"></i>View Applications
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('routes.cdc_schedule_mock') }}" class="btn btn-outline-warning d-block py-3">
+                                <i class="fas fa-calendar-alt me-2"></i>Schedule Mock Interviews
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('routes.cdc_companies') }}" class="btn btn-outline-info d-block py-3">
+                                <i class="fas fa-building me-2"></i>Manage Companies
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

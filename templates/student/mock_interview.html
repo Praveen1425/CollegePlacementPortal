@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}Mock Interview - College Placement Portal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        Mock Interview Management
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Schedule New Mock Interview -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-calendar-plus me-2"></i>Schedule New Mock Interview</h5>
+                            
+                            <!-- Scheduling Guidelines -->
+                            <div class="alert alert-warning mb-3">
+                                <h6><i class="fas fa-info-circle me-2"></i>Scheduling Guidelines:</h6>
+                                <ul class="mb-0">
+                                    <li>Interviews can only be scheduled between <strong>9:00 AM - 10:00 PM</strong></li>
+                                    <li>No interviews on <strong>Sundays</strong></li>
+                                    <li>Interviews must be scheduled within the <strong>next 30 days</strong></li>
+                                    <li>Cannot schedule interviews in the past</li>
+                                </ul>
+                            </div>
+                            
+                            <form method="POST" class="mt-3" id="mockInterviewForm">
+                                {{ form.hidden_tag() }}
+                                <div class="mb-3">
+                                    {{ form.student.label(class="form-label") }}
+                                    {{ form.student(class="form-select") }}
+                                    {% if form.student.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.student.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-3">
+                                    {{ form.interviewer.label(class="form-label") }}
+                                    {{ form.interviewer(class="form-control") }}
+                                    {% if form.interviewer.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.interviewer.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-3">
+                                    {{ form.scheduled_date.label(class="form-label") }}
+                                    {{ form.scheduled_date(class="form-control", type="datetime-local", id="scheduledDate") }}
+                                    {% if form.scheduled_date.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.scheduled_date.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text" id="dateHelp">Select a date and time for your mock interview</div>
+                                </div>
+                                <div class="mb-3">
+                                    {{ form.topic.label(class="form-label") }}
+                                    {{ form.topic(class="form-control") }}
+                                    {% if form.topic.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.topic.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <button type="submit" class="btn btn-primary" id="scheduleBtn">
+                                    <i class="fas fa-save me-2"></i>Schedule Interview
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-info-circle me-2"></i>Mock Interview Guidelines</h5>
+                            <div class="alert alert-info">
+                                <h6>Before Your Mock Interview:</h6>
+                                <ul class="mb-2">
+                                    <li>Research the company and role</li>
+                                    <li>Prepare your introduction</li>
+                                    <li>Review common interview questions</li>
+                                    <li>Practice your responses</li>
+                                    <li>Dress professionally</li>
+                                </ul>
+                                <h6>During the Interview:</h6>
+                                <ul class="mb-2">
+                                    <li>Maintain good eye contact</li>
+                                    <li>Speak clearly and confidently</li>
+                                    <li>Listen carefully to questions</li>
+                                    <li>Ask thoughtful questions</li>
+                                    <li>Show enthusiasm and interest</li>
+                                </ul>
+                                <h6>After the Interview:</h6>
+                                <ul>
+                                    <li>Review the feedback provided</li>
+                                    <li>Practice areas for improvement</li>
+                                    <li>Apply lessons to real interviews</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- My Mock Interviews -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h5><i class="fas fa-list me-2"></i>My Mock Interviews</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Date & Time</th>
+                                            <th>Interviewer</th>
+                                            <th>Topic</th>
+                                            <th>Status</th>
+                                            <th>Feedback</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for interview in mock_interviews %}
+                                        <tr>
+                                            <td>{{ interview.scheduled_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                            <td>{{ interview.interviewer }}</td>
+                                            <td>{{ interview.topic }}</td>
+                                            <td>
+                                                {% if interview.scheduled_date > now %}
+                                                    <span class="badge bg-warning">Scheduled</span>
+                                                {% else %}
+                                                    <span class="badge bg-success">Completed</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if interview.feedback %}
+                                                    <span class="badge bg-info">Available</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if interview.feedback %}
+                                                    <a href="{{ url_for('routes.student_feedback') }}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye me-1"></i>View Feedback
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted">
+                                                <i class="fas fa-calendar-times me-2"></i>
+                                                No mock interviews scheduled yet.
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5><i class="fas fa-lightbulb me-2"></i>Quick Actions</h5>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="{{ url_for('routes.chatbot') }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-comments me-2"></i>Practice with AI Chatbot
+                                </a>
+                                <a href="{{ url_for('routes.resume_review') }}" class="btn btn-outline-success">
+                                    <i class="fas fa-file-alt me-2"></i>Review Resume
+                                </a>
+                                <a href="{{ url_for('routes.student_dashboard') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head_content %}
+<style>
+.form-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.alert-info {
+    background-color: #e7f3ff;
+    border-color: #b3d9ff;
+    color: #0c5460;
+}
+
+.alert-info h6 {
+    color: #007bff;
+    font-weight: 600;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.alert-info ul {
+    margin-bottom: 0.5rem;
+}
+
+.alert-info li {
+    margin-bottom: 0.25rem;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffeaa7;
+    color: #856404;
+}
+
+.alert-warning h6 {
+    color: #856404;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.alert-warning ul {
+    margin-bottom: 0;
+}
+
+.alert-warning li {
+    margin-bottom: 0.25rem;
+}
+
+.table th {
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.form-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.text-success {
+    color: #28a745 !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const scheduledDateInput = document.getElementById('scheduledDate');
+    const dateHelp = document.getElementById('dateHelp');
+    const scheduleBtn = document.getElementById('scheduleBtn');
+    
+    function validateDateTime() {
+        const selectedDate = new Date(scheduledDateInput.value);
+        const now = new Date();
+        const oneMonthFromNow = new Date();
+        oneMonthFromNow.setDate(now.getDate() + 30);
+        
+        let isValid = true;
+        let message = 'Select a date and time for your mock interview';
+        let messageClass = 'text-muted';
+        
+        // Check if date is in the past
+        if (selectedDate < now) {
+            isValid = false;
+            message = '❌ Cannot schedule interviews in the past';
+            messageClass = 'text-danger';
+        }
+        // Check if it's Sunday
+        else if (selectedDate.getDay() === 0) { // Sunday
+            isValid = false;
+            message = '❌ Interviews cannot be scheduled on Sundays';
+            messageClass = 'text-danger';
+        }
+        // Check if time is between 9 AM and 10 PM
+        else if (selectedDate.getHours() < 9 || selectedDate.getHours() >= 22) {
+            isValid = false;
+            message = '❌ Interviews can only be scheduled between 9:00 AM and 10:00 PM';
+            messageClass = 'text-danger';
+        }
+        // Check if date is within next month
+        else if (selectedDate > oneMonthFromNow) {
+            isValid = false;
+            message = '❌ Interviews can only be scheduled within the next 30 days';
+            messageClass = 'text-danger';
+        }
+        else {
+            message = '✅ Valid interview time selected';
+            messageClass = 'text-success';
+        }
+        
+        dateHelp.textContent = message;
+        dateHelp.className = `form-text ${messageClass}`;
+        
+        // Enable/disable submit button
+        scheduleBtn.disabled = !isValid;
+        if (isValid) {
+            scheduleBtn.classList.remove('btn-secondary');
+            scheduleBtn.classList.add('btn-primary');
+        } else {
+            scheduleBtn.classList.remove('btn-primary');
+            scheduleBtn.classList.add('btn-secondary');
+        }
+    }
+    
+    // Set min and max datetime for the input
+    const now = new Date();
+    const oneMonthFromNow = new Date();
+    oneMonthFromNow.setDate(now.getDate() + 30);
+    
+    // Format datetime for input (YYYY-MM-DDTHH:MM)
+    const formatDateTime = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+    
+    // Set min to current time (rounded to next 15 minutes)
+    const minDate = new Date(now);
+    minDate.setMinutes(Math.ceil(minDate.getMinutes() / 15) * 15);
+    minDate.setSeconds(0);
+    minDate.setMilliseconds(0);
+    
+    scheduledDateInput.min = formatDateTime(minDate);
+    scheduledDateInput.max = formatDateTime(oneMonthFromNow);
+    
+    // Add event listener for validation
+    scheduledDateInput.addEventListener('change', validateDateTime);
+    scheduledDateInput.addEventListener('input', validateDateTime);
+    
+    // Initial validation
+    if (scheduledDateInput.value) {
+        validateDateTime();
+    }
+});
+</script>
+{% endblock %} 

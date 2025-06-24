@@ -11,15 +11,18 @@
                     <i class="fas fa-user-plus me-2"></i>
                     {% if user_type == 'student' %}
                         Student Registration
-                    {% else %}
+                    {% elif user_type == 'company' %}
                         Company Registration
+                    {% else %}
+                        CDC Registration
                     {% endif %}
                 </h4>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ url_for('register_student' if user_type == 'student' else 'register_company') }}">
+
+                <form method="POST" action="{{ url_for('routes.register') }}">
                     {{ form.hidden_tag() }}
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="{{ form.username.id }}" class="form-label">Username</label>
@@ -28,7 +31,7 @@
                                 <div class="text-danger">{{ error }}</div>
                             {% endfor %}
                         </div>
-                        
+
                         <div class="col-md-6">
                             <label for="{{ form.email.id }}" class="form-label">Email</label>
                             {{ form.email(class="form-control", placeholder="Enter your email") }}
@@ -37,7 +40,7 @@
                             {% endfor %}
                         </div>
                     </div>
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="{{ form.password.id }}" class="form-label">Password</label>
@@ -46,7 +49,7 @@
                                 <div class="text-danger">{{ error }}</div>
                             {% endfor %}
                         </div>
-                        
+
                         <div class="col-md-6">
                             <label for="{{ form.confirm_password.id }}" class="form-label">Confirm Password</label>
                             {{ form.confirm_password(class="form-control", placeholder="Confirm your password") }}
@@ -55,95 +58,29 @@
                             {% endfor %}
                         </div>
                     </div>
-                    
-                    {% if user_type == 'student' %}
-                        <hr>
-                        <h5 class="mb-3">Student Details</h5>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="{{ form.full_name.id }}" class="form-label">Full Name</label>
-                                {{ form.full_name(class="form-control", placeholder="Enter your full name") }}
-                                {% for error in form.full_name.errors %}
-                                    <div class="text-danger">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                            
-                            <div class="col-md-6">
-                                <label for="{{ form.roll_number.id }}" class="form-label">JNTU Roll Number</label>
-                                {{ form.roll_number(class="form-control", placeholder="e.g., 18H51A0501") }}
-                                {% for error in form.roll_number.errors %}
-                                    <div class="text-danger">{{ error }}</div>
-                                {% endfor %}
-                            </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.role.id }}" class="form-label">Role</label>
+                            {{ form.role(class="form-select") }}
+                            {% for error in form.role.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
                         </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="{{ form.branch.id }}" class="form-label">Branch</label>
-                                {{ form.branch(class="form-select") }}
-                                {% for error in form.branch.errors %}
-                                    <div class="text-danger">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                            
-                            <div class="col-md-6">
-                                <label for="{{ form.cgpa.id }}" class="form-label">CGPA</label>
-                                {{ form.cgpa(class="form-control", placeholder="Enter your CGPA (0-10)") }}
-                                {% for error in form.cgpa.errors %}
-                                    <div class="text-danger">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    
-                    {% else %}
-                        <hr>
-                        <h5 class="mb-3">Company Details</h5>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="{{ form.company_name.id }}" class="form-label">Company Name</label>
-                                {{ form.company_name(class="form-control", placeholder="Enter company name") }}
-                                {% for error in form.company_name.errors %}
-                                    <div class="text-danger">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                            
-                            <div class="col-md-6">
-                                <label for="{{ form.website.id }}" class="form-label">Website</label>
-                                {{ form.website(class="form-control", placeholder="https://example.com") }}
-                                {% for error in form.website.errors %}
-                                    <div class="text-danger">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="{{ form.established_year.id }}" class="form-label">Established Year</label>
-                                {{ form.established_year(class="form-control", placeholder="e.g., 1995") }}
-                                {% for error in form.established_year.errors %}
-                                    <div class="text-danger">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                            
-                            <div class="col-md-6">
-                                <label for="{{ form.description.id }}" class="form-label">Company Description</label>
-                                {{ form.description(class="form-control", rows=3, placeholder="Brief description of your company") }}
-                                {% for error in form.description.errors %}
-                                    <div class="text-danger">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    {% endif %}
-                    
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> After registration, you'll be redirected to complete your profile with additional details.
+                    </div>
+
                     <div class="d-grid gap-2 mt-4">
                         {{ form.submit(class="btn btn-primary") }}
                     </div>
                 </form>
             </div>
             <div class="card-footer text-center">
-                Already have an account? <a href="{{ url_for('login') }}" class="text-decoration-none">Login here</a>
+                Already have an account? <a href="{{ url_for('routes.login') }}" class="text-decoration-none">Login here</a>
             </div>
         </div>
     </div>

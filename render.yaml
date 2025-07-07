@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: college-placement-portal
+    env: python
+    buildCommand: ""
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SECRET_KEY
+        value: your-secret-key 

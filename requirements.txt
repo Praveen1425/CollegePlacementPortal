@@ -25,4 +25,5 @@ joblib==1.4.2
 threadpoolctl==3.6.0
 lxml==5.3.2
 tqdm==4.67.1
-Flask-Mail 
+Flask-Mail
+gunicorn 

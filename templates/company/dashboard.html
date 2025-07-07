@@ -110,13 +110,13 @@
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('routes.company_students') }}" class="btn btn-outline-success w-100">
-                                <i class="fas fa-users me-2"></i>View Students
+                            <a href="{{ url_for('routes.company_eligible_students') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-user-graduate me-2"></i>Eligible Students
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('routes.chatbot') }}" class="btn btn-outline-info w-100">
-                                <i class="fas fa-robot me-2"></i>AI Chatbot
+                            <a href="{{ url_for('routes.company_students') }}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-users me-2"></i>View Applications
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
@@ -129,6 +129,61 @@
             </div>
         </div>
     </div>
+
+    <!-- Eligible Students Overview -->
+    {% if jobs %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-graduate me-2"></i>Eligible Students for Your Job Postings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Job Title</th>
+                                    <th>CGPA Criteria</th>
+                                    <th>Eligible Branches</th>
+                                    <th>Eligible Students</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in jobs %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ job.title }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ job.package_offered }} LPA</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ job.cgpa_criteria }}</span>
+                                    </td>
+                                    <td>
+                                        <small>{{ job.eligible_branches|replace(",", ", ") }}</small>
+                                    </td>
+                                    <td>
+                                        {% set eligible_count = job_eligible_students[job.id]|length %}
+                                        <span class="badge bg-success">{{ eligible_count }} students</span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('routes.company_eligible_students', job_id=job.id) }}" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i> View Students
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Recent Applications -->
     {% if recent_applications %}

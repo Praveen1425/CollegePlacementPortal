@@ -461,19 +461,36 @@ def company_dashboard():
         applications_count = Application.query.join(JobPosting).filter(
             JobPosting.company_id == company_id
         ).count()
-        students_count = StudentProfile.query.count()
+        
+        # Get eligible students for this company's jobs (CGPA > 6.0)
+        eligible_students = StudentProfile.query.filter(StudentProfile.cgpa >= 6.0).all()
+        students_count = len(eligible_students)
         
         # Get recent applications for this company
         recent_applications = Application.query.join(JobPosting).filter(
             JobPosting.company_id == company_id
         ).order_by(Application.applied_date.desc()).limit(5).all()
         
+        # Get eligible students for each job
+        job_eligible_students = {}
+        for job in jobs:
+            eligible_for_job = []
+            for student in eligible_students:
+                # Check if student meets job criteria
+                if (student.cgpa >= job.cgpa_criteria and 
+                    student.branch in job.eligible_branches.split(',')):
+                    eligible_for_job.append(student)
+            job_eligible_students[job.id] = eligible_for_job
+        
         return render_template(
             'company/dashboard.html',
             jobs_count=jobs_count,
             applications_count=applications_count,
             students_count=students_count,
-            recent_applications=recent_applications
+            recent_applications=recent_applications,
+            jobs=jobs,
+            eligible_students=eligible_students,
+            job_eligible_students=job_eligible_students
         )
     
     return render_template('company/dashboard.html')
@@ -1329,3 +1346,66 @@ def cdc_student_analytics():
                          cgpa_ranges=cgpa_ranges,
                          application_stats=application_stats,
                          top_performers=top_performers)
+
+@bp.route('/company/eligible-students')
+@login_required
+def company_eligible_students():
+    """Company view of eligible students for their job postings"""
+    if not current_user.is_company():
+        flash('Access denied.', 'danger')
+        return redirect(url_for('routes.dashboard'))
+    
+    company_id = current_user.company_profile.id
+    
+    # Get all jobs for this company
+    jobs = JobPosting.query.filter_by(company_id=company_id).all()
+    
+    # Get search parameters
+    job_filter = request.args.get('job_id', '')
+    branch_filter = request.args.get('branch', '')
+    cgpa_min = request.args.get('cgpa_min', '6.0')  # Default minimum CGPA
+    cgpa_max = request.args.get('cgpa_max', '10.0')
+    
+    # Get eligible students (CGPA >= 6.0)
+    query = StudentProfile.query.filter(StudentProfile.cgpa >= 6.0)
+    
+    if branch_filter:
+        query = query.filter(StudentProfile.branch == branch_filter)
+    
+    if cgpa_min:
+        try:
+            query = query.filter(StudentProfile.cgpa >= float(cgpa_min))
+        except ValueError:
+            pass
+    
+    if cgpa_max:
+        try:
+            query = query.filter(StudentProfile.cgpa <= float(cgpa_max))
+        except ValueError:
+            pass
+    
+    eligible_students = query.order_by(StudentProfile.cgpa.desc()).all()
+    
+    # Filter by job if specified
+    if job_filter:
+        job = JobPosting.query.get(job_filter)
+        if job and job.company_id == company_id:
+            filtered_students = []
+            for student in eligible_students:
+                if (student.cgpa >= job.cgpa_criteria and 
+                    student.branch in job.eligible_branches.split(',')):
+                    filtered_students.append(student)
+            eligible_students = filtered_students
+    
+    # Get branch options for filter
+    branches = db.session.query(StudentProfile.branch).distinct().all()
+    branch_options = [branch[0] for branch in branches if branch[0]]
+    
+    return render_template('company/eligible_students.html',
+                         jobs=jobs,
+                         eligible_students=eligible_students,
+                         job_filter=job_filter,
+                         branch_filter=branch_filter,
+                         cgpa_min=cgpa_min,
+                         cgpa_max=cgpa_max,
+                         branch_options=branch_options)

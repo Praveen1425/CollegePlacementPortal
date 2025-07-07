@@ -2,6 +2,8 @@
 
 A comprehensive Flask-based web application that serves as a college placement portal connecting students, companies, and CDC (Career Development Cell) officers. The platform facilitates the entire placement process with AI-powered features.
 
+View my real time project on this : https://collegeplacementportal.onrender.com
+
 ## 🚀 Features
 
 ### Core Functionality

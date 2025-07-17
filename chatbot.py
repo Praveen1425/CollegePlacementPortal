@@ -77,7 +77,7 @@ def get_chatbot_response(user_input, student_id=None, session_id=None):
             enhanced_prompt = f"{context}\n\n{conversation_context}\n\nStudent Question: {user_input}"
         
         response = model.generate_content(enhanced_prompt)
-        response_text = response.text
+            response_text = response.text
         
         # Update conversation history
         update_conversation_history(session, "assistant", response_text)

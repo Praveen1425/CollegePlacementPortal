@@ -29,8 +29,7 @@ ENV/
 env/
 .venv/
 .ENV/
-.env/
-.venv/
+.env      # Environment file
 
 # Flask instance folder
 instance/
@@ -50,4 +49,4 @@ uploads/
 
 # Windows
 Thumbs.db
-ehthumbs.db 
+ehthumbs.db

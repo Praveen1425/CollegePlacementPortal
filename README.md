@@ -13,6 +13,10 @@ View my real time project on this : https://collegeplacementportal.onrender.com
 - **Mock Interviews**: CDC can schedule and provide feedback for mock interviews
 - **Application Tracking**: Real-time status updates and notifications
 
+
+<pre> [Student Login] | v [View Companies] --> [Apply] --> [Chatbot Prep] --> [Mock Interview] --> [Feedback] ^ | [CDC Login] --> [Add Company] --> [Set Eligibility] --> [Schedule Mock] --> [Provide Feedback] | v [Company Login] --> [View Students] --> [Schedule Interview] --> [Update Status] </pre>
+
+
 ### AI-Powered Features
 - **Intelligent Chatbot**: Google Gemini-powered assistant for career guidance
 - **Resume Analysis**: Comprehensive resume review with grammar, skills, and formatting analysis
